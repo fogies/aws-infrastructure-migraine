@@ -1,0 +1,14 @@
+# Python Environment
+/.venv/
+
+# IDE Configuration
+/.idea/
+
+# Binaries (e.g., Helm, Packer, Terraform)
+/bin/
+
+# Terraform Local State
+.terraform
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
