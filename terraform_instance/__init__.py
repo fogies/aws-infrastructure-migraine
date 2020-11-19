@@ -1,17 +1,16 @@
-# Support Invoke discovery of tasks
+from invoke import Collection
+
 from .tasks import *
 
 # Collection configured for expected use
-from invoke import Collection
-
 ns = Collection()
 
-ns.add_task(create)
+ns.add_task(apply)
 ns.add_task(destroy)
 
 ns.configure({
-    'minikube_helm_instance': {
-        'working_dir': 'minikube_helm_instance',
+    CONFIG_KEY: {
+        'working_dir': 'terraform_instance',
         'bin_dir': '../bin'
     }
 })
@@ -22,7 +21,7 @@ try:
     from . import instance as instance
     ns.add_collection(instance.ns, name='instance')
     ns.configure({
-        'minikube_helm_instance': instance.ns.configuration()
+        CONFIG_KEY: instance.ns.configuration()
     })
 except (AttributeError, ImportError, SyntaxError):
     pass

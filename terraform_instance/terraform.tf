@@ -18,7 +18,7 @@ module "minikube_helm_instance" {
 
   instance_name = "instance"
   instance_dir = "instance"
-  tasks_config_context = "minikube_helm_instance"
+  tasks_config_context = "terraform_instance"
 
   aws_availability_zone = "us-east-1a"
   ami_architecture = "amd64"

@@ -1,2 +1,4 @@
 invoke~=1.4.1
 ruamel.yaml~=0.16.12
+
+-e git+https://github.com/fogies/aws-infrastructure.git#egg=aws-infrastructure&subdirectory=aws_infrastructure
