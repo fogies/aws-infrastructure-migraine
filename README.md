@@ -19,11 +19,11 @@ Pending further development, a typical development environment then:
 - Runs a Flask application server locally, with hot reloading.  
 - Runs a Celery task server locally, with hot reloading.  
 
-  ```
-    depend.install.all               Install all dependencies.
-    dev.flask.serve                  Start Flask, listening on `localhost:4000`, including hot reloading.
-    dev.celery.serve                 TODO
-  ```
+```
+  depend.install.all               Install all dependencies.
+  dev.flask.serve                  Start Flask, listening on `localhost:4000`, including hot reloading.
+  dev.celery.serve                 TODO
+```
 
 For now, test the database connection by creating, exercising, and deleting test accounts:
 
