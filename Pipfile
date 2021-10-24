@@ -1,0 +1,30 @@
+################################################################################
+# Defines dependencies only for the top-level tasks.
+# Python-based sub-projects each include their own Pipfile.
+################################################################################
+
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pipenv = "*"
+requests = "*"
+
+[packages.aws-infrastructure]
+git = "https://github.com/fogies/aws-infrastructure.git"
+subdirectory = "aws_infrastructure"
+editable = true
+
+################################################################################
+# When co-developing aws-infrastructure, helpful to point at a branch.
+################################################################################
+# git = "https://github.com/<accountname>/aws-infrastructure.git"
+# ref = "<branchname>"
+################################################################################
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"

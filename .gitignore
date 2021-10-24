@@ -1,0 +1,25 @@
+# IDE Configuration
+**/.idea/
+
+# Binaries (e.g., Helm, Packer, Terraform)
+/bin/
+
+# Terraform Local State
+.terraform
+terraform.tfstate
+terraform.tfstate.backup
+terraform.tfstate.lock.info
+
+# Local Staging
+/.staging/
+
+# Secrets, defined using /** so we can also define exceptions
+/secrets/**
+
+# Exception to create /secrets/server/prod
+!/secrets/client
+!/secrets/client/.gitignore
+!/secrets/configuration
+!/secrets/configuration/.gitignore
+!/secrets/tests
+!/secrets/tests/.gitignore
