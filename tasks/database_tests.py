@@ -31,7 +31,7 @@ TEST_ACCOUNTS = [
 @task
 def create_accounts(context):
     """
-    Create some test accounts.
+    Create test accounts.
     """
 
     #
@@ -159,7 +159,7 @@ def create_accounts(context):
 @task
 def test_accounts(context):
     """
-    Test accounts by creating and deleting documents.
+    Exercise test accounts by creating and retrieving documents.
     """
 
     #
@@ -225,7 +225,7 @@ def test_accounts(context):
 @task
 def delete_accounts(context):
     """
-    Delete the test accounts.
+    Delete test accounts.
     """
 
     #
