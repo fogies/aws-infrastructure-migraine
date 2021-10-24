@@ -1,0 +1,11 @@
+# Path to the Helmfile relative to location of this helmfile-config.yaml
+helmfile: 'helmfile.yaml'
+
+# Dependencies to be uploaded so they can be referenced as local files
+dependencies:
+  - file: '../.staging/helm_repo/migraine-celery-0.1.0.tgz'
+    destination: './charts/migraine-celery.tgz'
+  - file: '../.staging/helm_repo/migraine-flask-0.1.0.tgz'
+    destination: './charts/migraine-flask.tgz'
+  - file: '../.staging/helm_repo/migraine-ingress-0.1.0.tgz'
+    destination: './charts/migraine-ingress.tgz'

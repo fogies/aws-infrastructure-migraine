@@ -1,0 +1,44 @@
+# https://doc.traefik.io/traefik/middlewares/stripprefix/
+
+apiVersion: 'traefik.containo.us/v1alpha1'
+kind: 'Middleware'
+
+metadata:
+  name: 'ingress-couchdb-web-stripprefix-db'
+  labels:
+    app: 'migraine'
+
+spec:
+  entryPoints:
+    - 'web'
+  stripPrefix:
+    prefixes:
+      - '/db'
+    forceSlash: false
+
+---
+
+# https://kubernetes.io/docs/concepts/services-networking/ingress/
+# https://www.thebookofjoel.com/k3s-cert-manager-letsencrypt
+
+apiVersion: 'traefik.containo.us/v1alpha1'
+kind: 'IngressRoute'
+
+metadata:
+  name: 'ingress-couchdb-web'
+  labels:
+    app: 'migraine'
+
+spec:
+  routes:
+    - kind: 'Rule'
+      match: 'HostRegexp(`{any:.+}`) && PathPrefix(`/db/`)'
+      priority: 10000
+      middlewares:
+        - name: 'enable-cors'
+          namespace: 'ingress-traefik'
+        - name: 'ingress-couchdb-web-stripprefix-db'
+      services:
+        - kind: 'Service'
+          name: 'migraine-database-svc-couchdb'
+          port: 5984

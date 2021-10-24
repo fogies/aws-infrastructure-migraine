@@ -1,0 +1,78 @@
+repositories:
+  # aws-infrastructure helm repository
+  #
+  # When developing charts that will later be merged, it can be helpful to instead point at a branch:
+  # url: 'https://raw.githubusercontent.com/<account>/aws-infrastructure/<branch>/helm_repo/'
+  - name: 'aws-infrastructure'
+    url: 'https://raw.githubusercontent.com/fogies/aws-infrastructure/main/helm_repo/'
+
+  - name: 'couchdb'
+    url: 'https://apache.github.io/couchdb-helm'
+
+releases:
+  # ingress-crd contains the CRDs required by ingress
+  - name: 'ingress-crd'
+    chart: 'aws-infrastructure/ingress-crd'
+    version: '0.1.0'
+
+  # ingress is then the actual ingress, including Traefik and cert-manager
+  - name: 'ingress'
+    chart: 'aws-infrastructure/ingress'
+    version: '0.4.0'
+    needs:
+      - 'ingress-crd'
+
+  # CouchDB instance
+  - name: 'migraine-database'
+    chart: 'couchdb/couchdb'
+    version: '3.3.4'
+    values:
+      - './values/secrets_couchdb_generated.values.yaml'
+        # adminUsername: 'XXXXXXXXXX'
+        # adminPassword: 'XXXXXXXXXX'
+        # cookieAuthSecret: 'XXXXXXXXXX'
+        # couchdbConfig:
+        #   couchdb:
+        #     uuid: 'XXXXXXXXXX'
+      - clusterSize: 3
+        image:
+          repository: 'couchdb'
+          tag: '3.2.0'
+          pullPolicy: 'Always'
+        resources:
+          requests:
+            cpu: 200m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+
+  # migraine-celery
+  # Installed from a local chart, managed in helmfile-config.yaml
+  - name: 'migraine-celery'
+    chart: './charts/migraine-celery.tgz'
+    values:
+      - './values/ecr_generated.values.yaml'
+
+  # migraine-flask
+  # Installed from a local chart, managed in helmfile-config.yaml
+  - name: 'migraine-flask'
+    chart: './charts/migraine-flask.tgz'
+    values:
+      - './values/ecr_generated.values.yaml'
+
+  # migraine-ingress
+  # Installed from a local chart, managed in helmfile-config.yaml
+  - name: 'migraine-ingress'
+    chart: './charts/migraine-ingress.tgz'
+    needs:
+      - 'ingress-crd'
+
+helmDefaults:
+  # Prefer explicit management of CRDs via releases
+  args:
+    - '--skip-crds'
+
+# Prefer explicit errors
+missingFileHandler: 'Error'
+
