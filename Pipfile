@@ -11,20 +11,10 @@ name = "pypi"
 [packages]
 pipenv = "*"
 requests = "*"
-
-[packages.aws-infrastructure]
-git = "https://github.com/fogies/aws-infrastructure.git"
-subdirectory = "aws_infrastructure"
-editable = true
-
-################################################################################
-# When co-developing aws-infrastructure, helpful to point at a branch.
-################################################################################
-# git = "https://github.com/<accountname>/aws-infrastructure.git"
-# ref = "<branchname>"
-################################################################################
+aws-infrastructure = {git = "https://github.com/fogies/aws-infrastructure.git", subdirectory = "aws_infrastructure", editable = true}
 
 [dev-packages]
+autopep8 = "*"
 
 [requires]
 python_version = "3.9"
