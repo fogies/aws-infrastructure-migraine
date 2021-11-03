@@ -11,6 +11,7 @@ from flask import Flask, current_app, request
 from flask_cors import CORS
 from flask_json import FlaskJSON, as_json
 from markupsafe import escape
+from users import users_blueprint
 
 
 def create_app():
@@ -36,6 +37,10 @@ def create_app():
     # Simple CORS wrapper of the application allows any and all requests.
     CORS(app)
     FlaskJSON(app)
+
+    # Register blue prints.
+    # TODO - maybe move blue prints to their own folder if functions explode.
+    app.register_blueprint(users_blueprint, url_prefix='/users')
 
     @app.route("/auth")
     @as_json
