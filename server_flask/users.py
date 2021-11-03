@@ -25,14 +25,18 @@ def create_user_accounts():
     Create user account.
     """
     # if "user_name" or "user_password" aren't there in json body raise a http 400.
-    if ("user_name" not in request.json) or ("user_password" not in request.json):
+    if ("user_name" not in request.json) or ("user_password" not in request.json) or ("secret_key" not in request.json):
         return "Method not allowed", 400
 
     user_name = request.json['user_name']
     user_password = request.json['user_password']
-
+    secret_key = request.json['secret_key']
     # current_app holds the flask app context.
     db_config = current_app.config
+
+    # As a simple security measure, check if secret key sent from Yasaman's client matches our secret key.
+    if secret_key != db_config["SECRET_KEY"]:
+        return "Method not allowed", 400
 
     # Load the couchdb class.
     couchdb_client_config = CouchDBClientConfig.load(
