@@ -37,7 +37,8 @@ def create_accounts(context):
     #
     # Obtain our connection information and admin credentials
     #
-    couchdb_client_config = CouchDBClientConfig.load(couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH)
+    couchdb_client_config = CouchDBClientConfig.load(
+        couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH)
     admin_auth = requests.auth.HTTPBasicAuth(
         username=couchdb_client_config.admin_user,
         password=couchdb_client_config.admin_password
@@ -62,7 +63,8 @@ def create_accounts(context):
         for account_current in TEST_ACCOUNTS:
             # Ensure the user is valid
             if not _validate_user(user=account_current.user):
-                raise ValueError('Invalid user "{}".'.format(account_current.user))
+                raise ValueError(
+                    'Invalid user "{}".'.format(account_current.user))
 
             # ID of the user document and its content
             user_doc_id = 'org.couchdb.user:{}'.format(account_current.user)
@@ -165,7 +167,8 @@ def test_accounts(context):
     #
     # Obtain our connection information
     #
-    couchdb_client_config = CouchDBClientConfig.load(couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH)
+    couchdb_client_config = CouchDBClientConfig.load(
+        couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH)
 
     try:
         # Connect as each valid user, confirm read/write from that database, confirm fail on other databases
@@ -212,11 +215,13 @@ def test_accounts(context):
                     response = session_current.get(
                         urljoin(
                             couchdb_client_config.baseurl,
-                            '{}/{}'.format(_database_for_user(user=fail_account_current.user), '_all_docs')
+                            '{}/{}'.format(_database_for_user(
+                                user=fail_account_current.user), '_all_docs')
                         ),
                     )
                     if response.status_code != 403:
-                        raise ValueError('Request status_code should have been 403 Forbidden.')
+                        raise ValueError(
+                            'Request status_code should have been 403 Forbidden.')
 
     except requests.exceptions.HTTPError as error:
         print(error)
@@ -231,7 +236,8 @@ def delete_accounts(context):
     #
     # Obtain our connection information and admin credentials
     #
-    couchdb_client_config = CouchDBClientConfig.load(couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH)
+    couchdb_client_config = CouchDBClientConfig.load(
+        couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH)
     admin_auth = requests.auth.HTTPBasicAuth(
         username=couchdb_client_config.admin_user,
         password=couchdb_client_config.admin_password
@@ -292,7 +298,72 @@ def delete_accounts(context):
         print(error)
 
 
+@task
+def get_accounts(context):
+    """
+    Get and print all user
+    """
+
+    #
+    # Obtain our connection information and admin credentials
+    #
+    couchdb_client_config = CouchDBClientConfig.load(
+        couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH)
+    admin_auth = requests.auth.HTTPBasicAuth(
+        username=couchdb_client_config.admin_user,
+        password=couchdb_client_config.admin_password
+    )
+
+    try:
+        # Open a session as admin
+        admin_session = requests.Session()
+        response = admin_session.post(
+            urljoin(
+                couchdb_client_config.baseurl,
+                '_session'
+            ),
+            json={
+                'name': admin_auth.username,
+                'password': admin_auth.password,
+            }
+        )
+        response.raise_for_status()
+
+        # Create each user and each corresponding database
+        for account_current in TEST_ACCOUNTS:
+            # Ensure the user is valid
+            if not _validate_user(user=account_current.user):
+                raise ValueError(
+                    'Invalid user "{}".'.format(account_current.user))
+
+            # ID of the user document and its content
+            user_doc_id = 'org.couchdb.user:{}'.format(account_current.user)
+            user_doc = {
+                'type': 'user',
+                'name': account_current.user,
+                'password': account_current.password,
+                'roles': [],
+            }
+
+            # Check whether the user already exists (e.g., from a previous initialize)
+            response = admin_session.get(
+                urljoin(
+                    couchdb_client_config.baseurl,
+                    '_users/{}'.format(user_doc_id)
+                ),
+            )
+            if response.status_code != 200:
+                # The user does not already exist. Print the user.
+                print("User {} Does NOT Exist".format(account_current))
+            else:
+                print("User {} Does Exist".format(account_current))
+
+    except requests.exceptions.HTTPError as error:
+        print(error)
+
+
 ns = Collection('tests')
 ns.add_task(create_accounts, name='create-accounts')
 ns.add_task(test_accounts, name='test-accounts')
 ns.add_task(delete_accounts, name='delete-accounts')
+ns.add_task(get_accounts, name='get-accounts')
