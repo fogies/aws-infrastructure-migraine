@@ -24,14 +24,17 @@ def create_user_accounts():
     """
     Create user account.
     """
-    current_app.logger.info(request.json)
+    # if "user_name" or "user_password" aren't there in json body raise a http 400.
     if ("user_name" not in request.json) or ("user_password" not in request.json):
         return "Method not allowed", 400
 
     user_name = request.json['user_name']
     user_password = request.json['user_password']
 
+    # current_app holds the flask app context.
     db_config = current_app.config
+
+    # Load the couchdb class.
     couchdb_client_config = CouchDBClientConfig.load(
         db_config['URI_DATABASE'], db_config['DB_USER'], db_config['DB_PASSWORD'])
 
