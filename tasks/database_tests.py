@@ -301,7 +301,7 @@ def delete_accounts(context):
 @task
 def get_accounts(context):
     """
-    Get and print all user
+    Print which user's account exists in couchdb in the test accounts.
     """
 
     #
