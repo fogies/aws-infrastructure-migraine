@@ -2,6 +2,8 @@
  * AWS Configuration.
  */
 provider "aws" {
-  profile = "default"
+  profile = "aws-infrastructure-migraine"
+  shared_credentials_file = "../../secrets/aws/aws-infrastructure-migraine.credentials"
+
   region  = "us-east-1"
 }

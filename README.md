@@ -226,20 +226,24 @@ so the `pipenv` command is available locally (e.g., without a need to reference 
 
 Runtime secrets are expected in the `secrets` directory.
 
+Secrets needed for AWS CLI access are in `secrets/aws`.
+
+- `secrets/aws/aws-infrastructure-migraine.credentials`
+
 Secrets needed for infrastructure configuration are in `secrets/configuration`.
 
-- `secrets/couchdb_config.yaml`
+- `secrets/configuration/couchdb_config.yaml`
 
   Secret for configuring CouchDB.
 
-Secrets needed by clients are in `secrets/clients`.
+Secrets needed by clients are in `secrets/client`.
 
-- `secrets/couchdb_client_config.yaml`
+- `secrets/client/couchdb_client_config.yaml`
 
   Secret for clients connecting to CouchDB.
 
 Secrets needed for testing are in `secrets/tests`.
 
-- `secrets/accounts_config.yaml`
+- `secrets/tests/accounts_config.yaml`
 
   Secret for test accounts.
