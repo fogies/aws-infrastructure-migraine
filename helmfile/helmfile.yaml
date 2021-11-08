@@ -10,20 +10,37 @@ repositories:
     url: 'https://apache.github.io/couchdb-helm'
 
 releases:
-  # ingress-crd contains the CRDs required by ingress
+  # ingress-crd contains CRDs required by cert-manager and by ingress
   - name: 'ingress-crd'
+    namespace: 'ingress-crd'
     chart: 'aws-infrastructure/ingress-crd'
-    version: '0.1.0'
+    version: '0.5.0'
 
-  # ingress is then the actual ingress, including Traefik and cert-manager
-  - name: 'ingress'
-    chart: 'aws-infrastructure/ingress'
-    version: '0.4.0'
+  # cert-manager
+  - name: 'cert-manager'
+    namespace: 'cert-manager'
+    chart: 'aws-infrastructure/cert-manager'
+    version: '1.6.1'
     needs:
       - 'ingress-crd'
 
+  # ingress
+  - name: 'ingress'
+    namespace: 'ingress'
+    chart: 'aws-infrastructure/ingress'
+    version: '0.6.0'
+    needs:
+      - 'ingress-crd'
+    # values:
+    #   - # To enable DEBUG logging for Traefik
+    #     traefik:
+    #       logs:
+    #         general:
+    #           level: 'DEBUG'
+
   # CouchDB instance
   - name: 'migraine-database'
+    namespace: 'migraine'
     chart: 'couchdb/couchdb'
     version: '3.3.4'
     values:
@@ -50,6 +67,7 @@ releases:
   # migraine-celery
   # Installed from a local chart, managed in helmfile-config.yaml
   - name: 'migraine-celery'
+    namespace: 'migraine'
     chart: './charts/migraine-celery.tgz'
     values:
       - './values/ecr_generated.values.yaml'
@@ -57,6 +75,7 @@ releases:
   # migraine-flask
   # Installed from a local chart, managed in helmfile-config.yaml
   - name: 'migraine-flask'
+    namespace: 'migraine'
     chart: './charts/migraine-flask.tgz'
     values:
       - './values/ecr_generated.values.yaml'
@@ -64,9 +83,10 @@ releases:
   # migraine-ingress
   # Installed from a local chart, managed in helmfile-config.yaml
   - name: 'migraine-ingress'
+    namespace: 'migraine'
     chart: './charts/migraine-ingress.tgz'
     needs:
-      - 'ingress-crd'
+      - 'ingress'
 
 helmDefaults:
   # Prefer explicit management of CRDs via releases

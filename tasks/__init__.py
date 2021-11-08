@@ -8,9 +8,13 @@ import tasks.dependencies
 import tasks.flask
 import tasks.helm
 import tasks.helmfile
+import tasks.terraform.dns
 import tasks.terraform.ecr
 import tasks.terraform.eip
 import tasks.terraform.instance
+import tasks.terraform_old.ecr
+import tasks.terraform_old.eip
+import tasks.terraform_old.instance
 
 ns = Collection()
 
@@ -58,8 +62,8 @@ compose_collection(
 )
 
 # Compose development and production
-compose_collection(ns, ns_dev, 'dev')
-compose_collection(ns, ns_prod, 'prod')
+compose_collection(ns, ns_dev, name='dev')
+compose_collection(ns, ns_prod, name='prod')
 
 #
 # Terraform infrastructure
@@ -67,8 +71,21 @@ compose_collection(ns, ns_prod, 'prod')
 
 ns_terraform = Collection('terraform')
 
+compose_collection(ns_terraform, tasks.terraform.dns.ns, name='dns')
 compose_collection(ns_terraform, tasks.terraform.ecr.ns, name='ecr')
 compose_collection(ns_terraform, tasks.terraform.eip.ns, name='eip')
 compose_collection(ns_terraform, tasks.terraform.instance.ns, name='instance')
 
 ns.add_collection(ns_terraform, 'terraform')
+
+#
+# Old Terraform infrastructure
+#
+
+ns_terraform_old = Collection('terraform-old')
+
+compose_collection(ns_terraform_old, tasks.terraform_old.ecr.ns, name='ecr')
+compose_collection(ns_terraform_old, tasks.terraform_old.eip.ns, name='eip')
+compose_collection(ns_terraform_old, tasks.terraform_old.instance.ns, name='instance')
+
+ns.add_collection(ns_terraform_old, 'terraform-old')

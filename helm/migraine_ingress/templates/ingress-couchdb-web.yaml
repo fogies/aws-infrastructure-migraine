@@ -9,8 +9,6 @@ metadata:
     app: 'migraine'
 
 spec:
-  entryPoints:
-    - 'web'
   stripPrefix:
     prefixes:
       - '/db'
@@ -30,13 +28,15 @@ metadata:
     app: 'migraine'
 
 spec:
+  entryPoints:
+    - 'web'
   routes:
     - kind: 'Rule'
       match: 'HostRegexp(`{any:.+}`) && PathPrefix(`/db/`)'
       priority: 10000
       middlewares:
         - name: 'enable-cors'
-          namespace: 'ingress-traefik'
+          namespace: 'ingress'
         - name: 'ingress-couchdb-web-stripprefix-db'
       services:
         - kind: 'Service'
