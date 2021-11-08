@@ -1,20 +1,14 @@
-import io
-import json
+from flask import Flask
+from flask_cors import CORS
+from flask_json import FlaskJSON
 import logging
 import os
-import sys
-from pathlib import Path
-from urllib.parse import urljoin
 
-import requests
-from flask import Flask, current_app, request
-from flask_cors import CORS
-from flask_json import FlaskJSON, as_json
-from markupsafe import escape
 from users import users_blueprint
 
 
 def create_app():
+    # Our app.
     app = Flask(__name__)
 
     # For debugging.
@@ -36,6 +30,8 @@ def create_app():
     # our development configuration also generates CORS requests.
     # Simple CORS wrapper of the application allows any and all requests.
     CORS(app)
+
+    # Improved JSON support.
     FlaskJSON(app)
 
     # Register blue prints.
