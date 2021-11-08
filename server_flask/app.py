@@ -42,9 +42,4 @@ def create_app():
     # TODO - maybe move blue prints to their own folder if functions explode.
     app.register_blueprint(users_blueprint, url_prefix='/users')
 
-    @app.route("/auth")
-    @as_json
-    def auth():
-        return {"name": "Luke Skywalker", "authToken": "my token"}
-
     return app
