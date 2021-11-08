@@ -8,6 +8,7 @@ flask = "*"
 flask-cors = "*"
 flask-json = "*"
 requests = "*"
+"ruamel.yaml" = "*"
 waitress = "*"
 
 [dev-packages]
