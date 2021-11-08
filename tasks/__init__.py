@@ -11,6 +11,9 @@ import tasks.helmfile
 import tasks.terraform.ecr
 import tasks.terraform.eip
 import tasks.terraform.instance
+import tasks.terraform_old.ecr
+import tasks.terraform_old.eip
+import tasks.terraform_old.instance
 
 ns = Collection()
 
@@ -72,3 +75,15 @@ compose_collection(ns_terraform, tasks.terraform.eip.ns, name='eip')
 compose_collection(ns_terraform, tasks.terraform.instance.ns, name='instance')
 
 ns.add_collection(ns_terraform, 'terraform')
+
+#
+# Old Terraform infrastructure
+#
+
+ns_terraform_old = Collection('terraform-old')
+
+compose_collection(ns_terraform_old, tasks.terraform_old.ecr.ns, name='ecr')
+compose_collection(ns_terraform_old, tasks.terraform_old.eip.ns, name='eip')
+compose_collection(ns_terraform_old, tasks.terraform_old.instance.ns, name='instance')
+
+ns.add_collection(ns_terraform_old, 'terraform-old')
