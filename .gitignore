@@ -14,9 +14,12 @@ terraform.tfstate.lock.info
 /.staging/
 
 # Secrets, defined using /** so we can also define exceptions
+# TODO: can we do this with local .gitignore files instead?
 /secrets/**
 
-# Exception to create /secrets/server/prod
+# Exception to create /secrets/
+!/secrets/aws
+!/secrets/aws/.gitignore
 !/secrets/client
 !/secrets/client/.gitignore
 !/secrets/configuration
