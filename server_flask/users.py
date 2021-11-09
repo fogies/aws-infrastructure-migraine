@@ -69,6 +69,11 @@ def create_user_accounts():
     }
 
     """
+
+    #
+    # Validate the contents of the request
+    #
+
     # if "user_name" or "user_password" aren't there in json body raise a http 400.
     if (
         ("user_name" not in request.json)
@@ -89,30 +94,15 @@ def create_user_accounts():
 
     #### TODO
 
-    # Load the couchdb class.
-    couchdb_client_config = CouchDBClientConfig.load(
-        db_config["URI_DATABASE"], db_config["DB_USER"], db_config["DB_PASSWORD"]
-    )
-
-    #
-    # Obtain our connection information and admin credentials
-    #
-    admin_auth = requests.auth.HTTPBasicAuth(
-        username=couchdb_client_config.admin_user,
-        password=couchdb_client_config.admin_password,
-    )
-
     try:
-        # Open a session as admin
-        admin_session = requests.Session()
-        response = admin_session.post(
-            urljoin(couchdb_client_config.baseurl, "_session"),
-            json={
-                "name": admin_auth.username,
-                "password": admin_auth.password,
-            },
-        )
-        response.raise_for_status()
+        #
+        # Connect to the database
+        #
+        admin_session = _create_admin_session()
+
+        #
+        # Validate the state of the database
+        #
 
         # Ensure the user_name is valid
         if not _validate_user(user=user_name):
@@ -199,6 +189,10 @@ def create_user_accounts():
         )
         response.raise_for_status()
         return {"user_name": user_name, "database": database}
+
+        #
+        # Update the database
+        #
 
     except requests.exceptions.HTTPError:
         return (
