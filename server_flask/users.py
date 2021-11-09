@@ -82,12 +82,13 @@ def create_user_accounts():
         # TODO: A centralized error handler could do a better job of this
         abort(400, jsonify(message="Invalid contents.", schema=error.schema, error=error.message))
 
+    # Obtain contents of the request
     requested_user = request.json["user_name"]
     requested_password = request.json["user_password"]
     account_creation_secret = request.json["secret_key"]
 
     # Require clients provide a secret for account creation
-    if account_creation_secret != current_app.config["SECRET_KEY"]:
+    if account_creation_secret != current_app.config["ACCOUNT_CREATION_SECRET"]:
         abort(403, jsonify(message="Invalid secret."))  # 403 Forbidden
 
     # Ensure the user_name is valid

@@ -6,8 +6,10 @@ COUCHDB_CLIENT_CONFIG_PATH = '../secrets/client/couchdb_client_config.yaml'
 
 
 class Config:
-    # TODO James: In production SECRET_KEY needs to be consistent across instances
-    SECRET_KEY: str = 'DEVELOPMENT'
+    # Expected by Flask
+    SECRET_KEY: str = 'SECRET_KEY'
+
+    ACCOUNT_CREATION_SECRET: str = 'ACCOUNT_CREATION_SECRET'
 
     URI_DATABASE: str
     DB_USER: str
