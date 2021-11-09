@@ -17,36 +17,29 @@ import hashlib
 users_blueprint = Blueprint("users_blueprint", __name__)
 
 
-def _create_admin_session() -> requests.Session:
+def _create_session(*, client_config: CouchDBClientConfig) -> requests.Session:
     """
-    Obtain a session authenticated as the database admin.
+    Obtain a session authenticated by the provided config.
     """
-
-    # Information needed for connecting to CouchDB
-    couchdb_client_config = CouchDBClientConfig(
-        baseurl=current_app.config["URI_DATABASE"],
-        admin_user=current_app.config["DB_USER"],
-        admin_password=current_app.config["DB_PASSWORD"],
-    )
 
     # Authentication object for our request
-    admin_auth = requests.auth.HTTPBasicAuth(
-        username=couchdb_client_config.admin_user,
-        password=couchdb_client_config.admin_password,
+    auth = requests.auth.HTTPBasicAuth(
+        username=client_config.user,
+        password=client_config.password,
     )
 
     # Open a session as admin
-    admin_session = requests.Session()
-    response = admin_session.post(
-        urljoin(couchdb_client_config.baseurl, "_session"),
+    session = requests.Session()
+    response = session.post(
+        urljoin(client_config.baseurl, "_session"),
         json={
-            "name": admin_auth.username,
-            "password": admin_auth.password,
+            "name": auth.username,
+            "password": auth.password,
         },
     )
     response.raise_for_status()
 
-    return admin_session
+    return session
 
 
 @users_blueprint.route("/create_account", methods=["POST"])
@@ -97,7 +90,15 @@ def create_user_accounts():
     #
     # Connect to the database
     #
-    admin_session = _create_admin_session()
+
+    # Information needed for connecting to CouchDB
+    admin_config = CouchDBClientConfig(
+        baseurl=current_app.config["URI_DATABASE"],
+        user=current_app.config["DB_USER"],
+        password=current_app.config["DB_PASSWORD"],
+    )
+
+    admin_session = _create_session(client_config=admin_config)
 
     #
     # Validate the state of the database
@@ -121,12 +122,12 @@ def create_user_accounts():
 
     # Check whether the user already exists (e.g., from a previous initialize)
     response = admin_session.get(
-        urljoin(couchdb_client_config.baseurl, "_users/{}".format(user_doc_id)),
+        urljoin(admin_config.baseurl, "_users/{}".format(user_doc_id)),
     )
     if response.status_code != 200:
         # The user does not already exist. Create the user.
         response = admin_session.put(
-            urljoin(couchdb_client_config.baseurl, "_users/{}".format(user_doc_id)),
+            urljoin(admin_config.baseurl, "_users/{}".format(user_doc_id)),
             json=user_doc,
         )
         response.raise_for_status()
@@ -136,30 +137,30 @@ def create_user_accounts():
 
         # The user already exists, provide an 'If-Match' header with the revision.
         # This will result in us overwriting the current document (e.g., a potential password change).
-        """
-        existing_user_doc = response.json()
-        response = admin_session.put(
-            urljoin(
-                couchdb_client_config.baseurl,
-                '_users/{}'.format(user_doc_id)
-            ),
-            headers={
-                'If-Match': existing_user_doc['_rev']
-            },
-            json=user_doc,
-        )
-        response.raise_for_status()
-        """
+        # """
+        # existing_user_doc = response.json()
+        # response = admin_session.put(
+        #     urljoin(
+        #         couchdb_client_config.baseurl,
+        #         '_users/{}'.format(user_doc_id)
+        #     ),
+        #     headers={
+        #         'If-Match': existing_user_doc['_rev']
+        #     },
+        #     json=user_doc,
+        # )
+        # response.raise_for_status()
+        # """
 
     # Check whether the database already exists (e.g., from a previous initialize).
     database = _database_for_user(user=user_name)
     response = admin_session.head(
-        urljoin(couchdb_client_config.baseurl, _database_for_user(user=user_name)),
+        urljoin(admin_config.baseurl, _database_for_user(user=user_name)),
     )
     if response.status_code != 200:
         # The database does not already exist. Create the database.
         response = admin_session.put(
-            urljoin(couchdb_client_config.baseurl, database),
+            urljoin(admin_config.baseurl, database),
         )
         response.raise_for_status()
     else:
@@ -169,7 +170,7 @@ def create_user_accounts():
 
     # Ensure the database has the desired _security document.
     response = admin_session.put(
-        urljoin(couchdb_client_config.baseurl, "{}/_security".format(database)),
+        urljoin(admin_config.baseurl, "{}/_security".format(database)),
         json={
             "members": {
                 "names": [
@@ -235,8 +236,8 @@ def get_user_profile():
     # Obtain our connection information and admin credentials
     #
     admin_auth = requests.auth.HTTPBasicAuth(
-        username=couchdb_client_config.admin_user,
-        password=couchdb_client_config.admin_password,
+        username=couchdb_client_config.user,
+        password=couchdb_client_config.password,
     )
 
     try:
@@ -327,8 +328,8 @@ def get_all_users():
     # Obtain our connection information and admin credentials
     #
     admin_auth = requests.auth.HTTPBasicAuth(
-        username=couchdb_client_config.admin_user,
-        password=couchdb_client_config.admin_password,
+        username=couchdb_client_config.user,
+        password=couchdb_client_config.password,
     )
 
     try:

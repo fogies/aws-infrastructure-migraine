@@ -39,8 +39,8 @@ def create_accounts(context):
         couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH
     )
     admin_auth = requests.auth.HTTPBasicAuth(
-        username=couchdb_client_config.admin_user,
-        password=couchdb_client_config.admin_password,
+        username=couchdb_client_config.user,
+        password=couchdb_client_config.password,
     )
 
     try:
@@ -223,8 +223,8 @@ def delete_accounts(context):
         couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH
     )
     admin_auth = requests.auth.HTTPBasicAuth(
-        username=couchdb_client_config.admin_user,
-        password=couchdb_client_config.admin_password,
+        username=couchdb_client_config.user,
+        password=couchdb_client_config.password,
     )
 
     try:
@@ -284,8 +284,8 @@ def get_accounts(context):
         couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH
     )
     admin_auth = requests.auth.HTTPBasicAuth(
-        username=couchdb_client_config.admin_user,
-        password=couchdb_client_config.admin_password,
+        username=couchdb_client_config.user,
+        password=couchdb_client_config.password,
     )
 
     try:

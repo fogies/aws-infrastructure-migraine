@@ -4,22 +4,22 @@ class CouchDBClientConfig:
     """
 
     _baseurl: str
-    _admin_password: str
-    _admin_user: str
+    _password: str
+    _user: str
 
-    def __init__(self, *, baseurl: str, admin_user: str, admin_password: str):
+    def __init__(self, *, baseurl: str, user: str, password: str):
         self._baseurl = baseurl
-        self._admin_user = admin_user
-        self._admin_password = admin_password
-
-    @property
-    def admin_password(self) -> str:
-        return self._admin_password
-
-    @property
-    def admin_user(self) -> str:
-        return self._admin_user
+        self._user = user
+        self._password = password
 
     @property
     def baseurl(self) -> str:
         return self._baseurl
+
+    @property
+    def password(self) -> str:
+        return self._password
+
+    @property
+    def user(self) -> str:
+        return self._user
