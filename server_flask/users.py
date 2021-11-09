@@ -134,72 +134,46 @@ def create_user_accounts():
     # Create the user and their database
     #
 
-    if response.status_code != 200:
-        # The user does not already exist. Create the user.
-        response = admin_session.put(
-            urljoin(admin_config.baseurl, "_users/{}".format(user_doc_id)),
-            json={
-                "type": "user",
-                "name": user_name,
-                "password": user_password,
-                "roles": [],
-            },
-        )
-        response.raise_for_status()
-    else:
+    # Because there are no transactions, it is possible to reach this point in a race condition.
+    # In that case, creation of the user document is atomic, so one side of the race will fail.
 
-        return "The user already exists", 400
+    # Create the user
+    response = admin_session.put(
+        urljoin(admin_config.baseurl, "_users/{}".format(user_doc_id)),
+        json={
+            "type": "user",
+            "name": user_name,
+            "password": user_password,
+            "roles": [],
+        },
+    )
+    response.raise_for_status()
 
-        # The user already exists, provide an 'If-Match' header with the revision.
-        # This will result in us overwriting the current document (e.g., a potential password change).
-        # """
-        # existing_user_doc = response.json()
-        # response = admin_session.put(
-        #     urljoin(
-        #         couchdb_client_config.baseurl,
-        #         '_users/{}'.format(user_doc_id)
-        #     ),
-        #     headers={
-        #         'If-Match': existing_user_doc['_rev']
-        #     },
-        #     json=user_doc,
-        # )
-        # response.raise_for_status()
-        # """
-
-    # Check whether the database already exists (e.g., from a previous initialize).
-    if response.status_code != 200:
-        # The database does not already exist. Create the database.
-        response = admin_session.put(
-            urljoin(admin_config.baseurl, database),
-        )
-        response.raise_for_status()
-    else:
-        # In production, the database already existing is something we should have checked before starting.
-        # It would mean the account already exists, or that _database_for_user has generated a collision.
-        pass
+    # Create the database.
+    response = admin_session.put(
+        urljoin(admin_config.baseurl, database),
+    )
+    response.raise_for_status()
 
     # Ensure the database has the desired _security document.
     response = admin_session.put(
         urljoin(admin_config.baseurl, "{}/_security".format(database)),
         json={
             "members": {
-                "names": [
-                    user_name,
-                ],
-                "roles": [
-                    "_admin",
-                ],
+                "names": [user_name],
+                "roles": ["_admin"],
             },
             "admins": {
-                "roles": [
-                    "_admin",
-                ],
+                "roles": ["_admin"],
             },
         },
     )
     response.raise_for_status()
-    return {"user_name": user_name, "database": database}
+
+    return {
+        "user_name": user_name,
+        "database": database,
+    }
 
 
 @users_blueprint.route("/get_profile", methods=["POST"])
