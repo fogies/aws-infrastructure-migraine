@@ -17,6 +17,10 @@ import hashlib
 users_blueprint = Blueprint("users_blueprint", __name__)
 
 
+def _create_admin_session():
+    pass
+
+
 @users_blueprint.route("/create_account", methods=["POST"])
 @as_json
 def create_user_accounts():
