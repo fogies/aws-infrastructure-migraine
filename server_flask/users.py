@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, current_app
+from flask import abort, Blueprint, render_template, current_app
 from flask import jsonify, request, make_response, url_for, redirect
 from flask_json import as_json
 
@@ -110,24 +110,40 @@ def create_user_accounts():
     # Validate the state of the database
     #
 
-    # ID of the user document and its content
+    # ID of the user document
     user_doc_id = "org.couchdb.user:{}".format(user_name)
-    user_doc = {
-        "type": "user",
-        "name": user_name,
-        "password": user_password,
-        "roles": [],
-    }
 
-    # Check whether the user already exists (e.g., from a previous initialize)
+    # Ensure the user does not already exist
     response = admin_session.get(
         urljoin(admin_config.baseurl, "_users/{}".format(user_doc_id)),
     )
+    if response.ok:
+        # Get succeeded, so the user already exists
+        abort(409)  # Conflict
+
+    # Ensure the database does not already exist
+    database = _database_for_user(user=user_name)
+    response = admin_session.head(
+        urljoin(admin_config.baseurl, database),
+    )
+    if response.ok:
+        # Get succeeded, so the database already exists
+        abort(409)  # Conflict
+
+    #
+    # Create the user and their database
+    #
+
     if response.status_code != 200:
         # The user does not already exist. Create the user.
         response = admin_session.put(
             urljoin(admin_config.baseurl, "_users/{}".format(user_doc_id)),
-            json=user_doc,
+            json={
+                "type": "user",
+                "name": user_name,
+                "password": user_password,
+                "roles": [],
+            },
         )
         response.raise_for_status()
     else:
@@ -152,10 +168,6 @@ def create_user_accounts():
         # """
 
     # Check whether the database already exists (e.g., from a previous initialize).
-    database = _database_for_user(user=user_name)
-    response = admin_session.head(
-        urljoin(admin_config.baseurl, _database_for_user(user=user_name)),
-    )
     if response.status_code != 200:
         # The database does not already exist. Create the database.
         response = admin_session.put(
@@ -188,10 +200,6 @@ def create_user_accounts():
     )
     response.raise_for_status()
     return {"user_name": user_name, "database": database}
-
-    #
-    # Update the database
-    #
 
 
 @users_blueprint.route("/get_profile", methods=["POST"])
