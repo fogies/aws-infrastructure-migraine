@@ -94,7 +94,6 @@ def create_user_accounts():
 
     #### TODO
 
-    try:
         #
         # Connect to the database
         #
@@ -193,12 +192,6 @@ def create_user_accounts():
         #
         # Update the database
         #
-
-    except requests.exceptions.HTTPError:
-        return (
-            "Uh oh, something went down. Please get in touch with the administrator.",
-            500,
-        )
 
 
 @users_blueprint.route("/get_profile", methods=["POST"])
