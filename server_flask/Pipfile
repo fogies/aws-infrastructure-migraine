@@ -7,7 +7,9 @@ name = "pypi"
 flask = "*"
 flask-cors = "*"
 flask-json = "*"
+jsonschema = "*"
 requests = "*"
+"ruamel.yaml" = "*"
 waitress = "*"
 
 [dev-packages]
