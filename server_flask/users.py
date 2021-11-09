@@ -66,6 +66,8 @@ def create_user_accounts():
     #
     # Validate the contents of the request
     #
+    # TODO: We can probably do some schema validation here. Skipped for now.
+    #
 
     # if "user_name" or "user_password" aren't there in json body raise a http 400.
     if (
@@ -91,8 +93,6 @@ def create_user_accounts():
             "This user name is not allowed. Please make sure your user name doesn not start with 'user_' and is less than 32 characters long.",
             400,
         )
-
-    #### TODO
 
     #
     # Connect to the database
