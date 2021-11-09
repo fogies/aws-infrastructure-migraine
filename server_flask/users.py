@@ -17,8 +17,36 @@ import hashlib
 users_blueprint = Blueprint("users_blueprint", __name__)
 
 
-def _create_admin_session():
-    pass
+def _create_admin_session() -> requests.Session:
+    """
+    Obtain a session authenticated as the database admin.
+    """
+
+    # Information needed for connecting to CouchDB
+    couchdb_client_config = CouchDBClientConfig(
+        baseurl=current_app.config["URI_DATABASE"],
+        admin_user=current_app.config["DB_USER"],
+        admin_password=current_app.config["DB_PASSWORD"],
+    )
+
+    # Authentication object for our request
+    admin_auth = requests.auth.HTTPBasicAuth(
+        username=couchdb_client_config.admin_user,
+        password=couchdb_client_config.admin_password,
+    )
+
+    # Open a session as admin
+    admin_session = requests.Session()
+    response = admin_session.post(
+        urljoin(couchdb_client_config.baseurl, "_session"),
+        json={
+            "name": admin_auth.username,
+            "password": admin_auth.password,
+        },
+    )
+    response.raise_for_status()
+
+    return admin_session
 
 
 @users_blueprint.route("/create_account", methods=["POST"])
@@ -58,6 +86,8 @@ def create_user_accounts():
     # As a simple security measure, check if secret key sent from Yasaman's client matches our secret key.
     if secret_key != db_config["SECRET_KEY"]:
         return "Method not allowed", 400
+
+    #### TODO
 
     # Load the couchdb class.
     couchdb_client_config = CouchDBClientConfig.load(
