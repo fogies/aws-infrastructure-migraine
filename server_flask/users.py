@@ -85,13 +85,19 @@ def create_user_accounts():
     if secret_key != db_config["SECRET_KEY"]:
         return "Method not allowed", 400
 
+    # Ensure the user_name is valid
+    if not _validate_user(user=user_name):
+        return (
+            "This user name is not allowed. Please make sure your user name doesn not start with 'user_' and is less than 32 characters long.",
+            400,
+        )
+
     #### TODO
 
     #
     # Connect to the database
     #
 
-    # Information needed for connecting to CouchDB
     admin_config = CouchDBClientConfig(
         baseurl=current_app.config["URI_DATABASE"],
         user=current_app.config["DB_USER"],
@@ -103,13 +109,6 @@ def create_user_accounts():
     #
     # Validate the state of the database
     #
-
-    # Ensure the user_name is valid
-    if not _validate_user(user=user_name):
-        return (
-            "This user name is not allowed. Please make sure your user name doesn not start with 'user_' and is less than 32 characters long.",
-            400,
-        )
 
     # ID of the user document and its content
     user_doc_id = "org.couchdb.user:{}".format(user_name)
