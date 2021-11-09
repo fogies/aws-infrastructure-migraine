@@ -1,6 +1,7 @@
 from flask import abort, Blueprint, render_template, current_app
 from flask import jsonify, request, make_response, url_for, redirect
 from flask_json import as_json
+import jsonschema
 
 import requests
 import re
@@ -66,33 +67,32 @@ def create_user_accounts():
     #
     # Validate the contents of the request
     #
-    # TODO: We can probably do some schema validation here. Skipped for now.
-    #
 
-    # if "user_name" or "user_password" aren't there in json body raise a http 400.
-    if (
-        ("user_name" not in request.json)
-        or ("user_password" not in request.json)
-        or ("secret_key" not in request.json)
-    ):
-        return "Method not allowed", 400
+    schema = {
+        "type": "object",
+        "properties": {
+            "user_name": {"type": "string"},
+            "user_password": {"type": "string"},
+            "secret_key": {"type": "string"},
+        }
+    }
+    try:
+        jsonschema.validate(instance=request.json, schema=schema)
+    except (jsonschema.SchemaError, jsonschema.ValidationError) as error:
+        # TODO: A centralized error handler could do a better job of this
+        abort(400, jsonify(message="Invalid contents.", schema=error.schema, error=error.message))
 
-    user_name = request.json["user_name"]
-    user_password = request.json["user_password"]
-    secret_key = request.json["secret_key"]
-    # current_app holds the flask app context.
-    db_config = current_app.config
+    requested_user = request.json["user_name"]
+    requested_password = request.json["user_password"]
+    account_creation_secret = request.json["secret_key"]
 
-    # As a simple security measure, check if secret key sent from Yasaman's client matches our secret key.
-    if secret_key != db_config["SECRET_KEY"]:
-        return "Method not allowed", 400
+    # Require clients provide a secret for account creation
+    if account_creation_secret != current_app.config["SECRET_KEY"]:
+        abort(403, jsonify(message="Invalid secret."))  # 403 Forbidden
 
     # Ensure the user_name is valid
-    if not _validate_user(user=user_name):
-        return (
-            "This user name is not allowed. Please make sure your user name doesn not start with 'user_' and is less than 32 characters long.",
-            400,
-        )
+    if not _validate_user(user=requested_user):
+        abort(403, jsonify(message="User not allowed."))  # 403 Forbidden
 
     #
     # Connect to the database
@@ -111,7 +111,7 @@ def create_user_accounts():
     #
 
     # ID of the user document
-    user_doc_id = "org.couchdb.user:{}".format(user_name)
+    user_doc_id = "org.couchdb.user:{}".format(requested_user)
 
     # Ensure the user does not already exist
     response = admin_session.get(
@@ -119,16 +119,16 @@ def create_user_accounts():
     )
     if response.ok:
         # Get succeeded, so the user already exists
-        abort(409)  # Conflict
+        abort(409, jsonify(message="User already exists."))  # 409 Conflict
 
     # Ensure the database does not already exist
-    database = _database_for_user(user=user_name)
+    database = _database_for_user(user=requested_user)
     response = admin_session.head(
         urljoin(admin_config.baseurl, database),
     )
     if response.ok:
         # Get succeeded, so the database already exists
-        abort(409)  # Conflict
+        abort(409, jsonify(message="Database already exists."))  # 409 Conflict
 
     #
     # Create the user and their database
@@ -142,8 +142,8 @@ def create_user_accounts():
         urljoin(admin_config.baseurl, "_users/{}".format(user_doc_id)),
         json={
             "type": "user",
-            "name": user_name,
-            "password": user_password,
+            "name": requested_user,
+            "password": requested_password,
             "roles": [],
         },
     )
@@ -160,7 +160,7 @@ def create_user_accounts():
         urljoin(admin_config.baseurl, "{}/_security".format(database)),
         json={
             "members": {
-                "names": [user_name],
+                "names": [requested_user],
                 "roles": ["_admin"],
             },
             "admins": {
@@ -171,7 +171,7 @@ def create_user_accounts():
     response.raise_for_status()
 
     return {
-        "user_name": user_name,
+        "user_name": requested_user,
         "database": database,
     }
 
