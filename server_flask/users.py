@@ -28,7 +28,7 @@ def _create_session(*, client_config: CouchDBClientConfig) -> requests.Session:
         password=client_config.password,
     )
 
-    # Open a session as admin
+    # Open a session
     session = requests.Session()
     response = session.post(
         urljoin(client_config.baseurl, "_session"),
