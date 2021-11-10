@@ -1,3 +1,4 @@
+from typing import Dict
 from flask import abort, Blueprint, current_app
 from flask import jsonify, request
 from flask_json import as_json
@@ -42,6 +43,25 @@ def _create_session(*, client_config: CouchDBClientConfig) -> requests.Session:
     return session
 
 
+def _validate_request_json_schema(*, instance: Dict, schema: Dict):
+    # NOTE - In spirit of James' TODO message - A centralized error handler could do a better job of this
+    """Validates schema_instance by comparing it with schema. Raises a 400 if schema_instance in invalid.
+
+    Args:
+        instance (Dict): Schema instance which needs to validated
+        schema (Dict): Schema against which instance will be validated
+    """
+    try:
+        jsonschema.validate(instance=instance, schema=schema)
+    except (jsonschema.SchemaError, jsonschema.ValidationError) as error:
+        abort(
+            400,
+            jsonify(
+                message="Invalid contents.", schema=error.schema, error=error.message
+            ),
+        )
+
+
 @users_blueprint.route("/create_account", methods=["POST"])
 @as_json
 def create_user_accounts():
@@ -74,17 +94,9 @@ def create_user_accounts():
             "user_password": {"type": "string"},
             "secret_key": {"type": "string"},
         },
+        "required": ["user_name", "user_password", "secret_key"],
     }
-    try:
-        jsonschema.validate(instance=request.json, schema=schema)
-    except (jsonschema.SchemaError, jsonschema.ValidationError) as error:
-        # TODO: A centralized error handler could do a better job of this
-        abort(
-            400,
-            jsonify(
-                message="Invalid contents.", schema=error.schema, error=error.message
-            ),
-        )
+    _validate_request_json_schema(instance=request.json, schema=schema)
 
     # Obtain contents of the request
     requested_user = request.json["user_name"]
@@ -209,17 +221,9 @@ def get_user_profile():
             "user_name": {"type": "string"},
             "secret_key": {"type": "string"},
         },
+        "required": ["user_name", "secret_key"],
     }
-    try:
-        jsonschema.validate(instance=request.json, schema=schema)
-    except (jsonschema.SchemaError, jsonschema.ValidationError) as error:
-        # TODO: A centralized error handler could do a better job of this
-        abort(
-            400,
-            jsonify(
-                message="Invalid contents.", schema=error.schema, error=error.message
-            ),
-        )
+    _validate_request_json_schema(instance=request.json, schema=schema)
 
     # Obtain contents of the request
     requested_user = request.json["user_name"]
@@ -283,7 +287,6 @@ def get_all_users():
         "secret_key": <>
     }
     """
-
     #
     # Validate the contents of the request
     #
@@ -292,17 +295,9 @@ def get_all_users():
         "properties": {
             "secret_key": {"type": "string"},
         },
+        "required": ["secret_key"],
     }
-    try:
-        jsonschema.validate(instance=request.json, schema=schema)
-    except (jsonschema.SchemaError, jsonschema.ValidationError) as error:
-        # TODO: A centralized error handler could do a better job of this
-        abort(
-            400,
-            jsonify(
-                message="Invalid contents.", schema=error.schema, error=error.message
-            ),
-        )
+    _validate_request_json_schema(instance=request.json, schema=schema)
 
     # Obtain contents of the request
     client_secret_key = request.json["secret_key"]
