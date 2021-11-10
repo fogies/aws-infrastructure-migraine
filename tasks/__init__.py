@@ -53,13 +53,13 @@ ns_prod = Collection("prod")
 # Compose from database.py
 compose_collection(
     ns_dev,
-    tasks.database.ns.collections['dev'],
-    name='database',
+    tasks.database.ns.collections["dev"],
+    name="database",
 )
 compose_collection(
     ns_prod,
-    tasks.database.ns.collections['prod'],
-    name='database',
+    tasks.database.ns.collections["prod"],
+    name="database",
 )
 
 # # Compose from celery.py
