@@ -1,5 +1,5 @@
-from flask import abort, Blueprint, render_template, current_app
-from flask import jsonify, request, make_response, url_for, redirect
+from flask import abort, Blueprint, current_app
+from flask import jsonify, request
 from flask_json import as_json
 import jsonschema
 
@@ -7,7 +7,6 @@ import requests
 import re
 from database import CouchDBClientConfig
 
-from pathlib import Path
 import requests
 import requests.auth
 import requests.exceptions
@@ -74,21 +73,26 @@ def create_user_accounts():
             "user_name": {"type": "string"},
             "user_password": {"type": "string"},
             "secret_key": {"type": "string"},
-        }
+        },
     }
     try:
         jsonschema.validate(instance=request.json, schema=schema)
     except (jsonschema.SchemaError, jsonschema.ValidationError) as error:
         # TODO: A centralized error handler could do a better job of this
-        abort(400, jsonify(message="Invalid contents.", schema=error.schema, error=error.message))
+        abort(
+            400,
+            jsonify(
+                message="Invalid contents.", schema=error.schema, error=error.message
+            ),
+        )
 
     # Obtain contents of the request
     requested_user = request.json["user_name"]
     requested_password = request.json["user_password"]
-    account_creation_secret = request.json["secret_key"]
+    client_secret_key = request.json["secret_key"]
 
     # Require clients provide a secret for account creation
-    if account_creation_secret != current_app.config["ACCOUNT_CREATION_SECRET"]:
+    if client_secret_key != current_app.config["CLIENT_SECRET_KEY"]:
         abort(403, jsonify(message="Invalid secret."))  # 403 Forbidden
 
     # Ensure the user_name is valid
@@ -196,86 +200,76 @@ def get_user_profile():
     }
 
     """
-    # if "user_name" or "user_password" aren't there in json body raise a http 400.
-    if ("user_name" not in request.json) or ("secret_key" not in request.json):
-        return "Method not allowed", 400
-
-    user_name = request.json["user_name"]
-    secret_key = request.json["secret_key"]
-    # current_app holds the flask app context.
-    db_config = current_app.config
-
-    # As a simple security measure, check if secret key sent from Yasaman's client matches our secret key.
-    if secret_key != db_config["SECRET_KEY"]:
-        return "Method not allowed", 400
-
-    # Load the couchdb class.
-    couchdb_client_config = CouchDBClientConfig.load(
-        db_config["URI_DATABASE"], db_config["DB_USER"], db_config["DB_PASSWORD"]
-    )
-
     #
-    # Obtain our connection information and admin credentials
+    # Validate the contents of the request
     #
-    admin_auth = requests.auth.HTTPBasicAuth(
-        username=couchdb_client_config.user,
-        password=couchdb_client_config.password,
-    )
-
+    schema = {
+        "type": "object",
+        "properties": {
+            "user_name": {"type": "string"},
+            "secret_key": {"type": "string"},
+        },
+    }
     try:
-        # Open a session as admin
-        admin_session = requests.Session()
-        response = admin_session.post(
-            urljoin(couchdb_client_config.baseurl, "_session"),
-            json={
-                "name": admin_auth.username,
-                "password": admin_auth.password,
-            },
+        jsonschema.validate(instance=request.json, schema=schema)
+    except (jsonschema.SchemaError, jsonschema.ValidationError) as error:
+        # TODO: A centralized error handler could do a better job of this
+        abort(
+            400,
+            jsonify(
+                message="Invalid contents.", schema=error.schema, error=error.message
+            ),
         )
-        response.raise_for_status()
 
-        # Ensure the user_name is valid
-        if not _validate_user(user=user_name):
-            return (
-                "This user name is not allowed. Please make sure your user name doesn not start with 'user_' and is less than 32 characters long.",
-                400,
-            )
+    # Obtain contents of the request
+    requested_user = request.json["user_name"]
+    client_secret_key = request.json["secret_key"]
 
-        # ID of the user document and its content
-        user_doc_id = "org.couchdb.user:{}".format(user_name)
+    # Require clients provide a secret for account creation
+    if client_secret_key != current_app.config["CLIENT_SECRET_KEY"]:
+        abort(403, jsonify(message="Invalid secret."))  # 403 Forbidden
 
-        # Check whether the user already exists (e.g., from a previous initialize)
-        response = admin_session.get(
-            urljoin(couchdb_client_config.baseurl, "_users/{}".format(user_doc_id)),
-        )
-        if response.status_code != 200:
-            # The user does not already exist. Return with 400
-            return "The user does not exist", 400
-        else:
+    # Ensure the user_name is valid
+    if not _validate_user(user=requested_user):
+        abort(403, jsonify(message="User not allowed."))  # 403 Forbidden
 
-            # The user exists, check if database exists.
-            database = _database_for_user(user=user_name)
-            response = admin_session.head(
-                urljoin(
-                    couchdb_client_config.baseurl, _database_for_user(user=user_name)
-                ),
-            )
-            if response.status_code != 200:
-                # The database does not exist. Something is weird. Raise 500.
-                return (
-                    "Uh oh, this shouldn't happen. Database doesn't exist for this user. Please get in touch with the administrator.",
-                    500,
-                )
+    #
+    # Connect to the database
+    #
 
-            else:
-                # Return the database name since it exists.
-                return {"user_name": user_name, "database": database}
+    admin_config = CouchDBClientConfig(
+        baseurl=current_app.config["URI_DATABASE"],
+        user=current_app.config["DB_USER"],
+        password=current_app.config["DB_PASSWORD"],
+    )
 
-    except requests.exceptions.HTTPError:
-        return (
-            "Uh oh, something went down. Please get in touch with the administrator.",
-            500,
-        )
+    admin_session = _create_session(client_config=admin_config)
+
+    # ID of the user document and its content
+    user_doc_id = "org.couchdb.user:{}".format(requested_user)
+
+    # Check whether the user already exists (e.g., from a previous initialize)
+    response = admin_session.get(
+        urljoin(admin_config.baseurl, "_users/{}".format(user_doc_id)),
+    )
+    response.raise_for_status()
+
+    # NOTE: @James: Instead of `response.raise_for_status()`, should we send more usable abort messages if username and/or database doesn't exist? Example provided as comment below.
+    """
+    if response.status_code != 200:
+        # The user does not exist. Return with 404
+        abort(404, jsonify(message="The user does not exist."))  # 409 Conflict
+    """
+
+    # The user exists, check if database exists.
+    database = _database_for_user(user=requested_user)
+    response = admin_session.head(
+        urljoin(admin_config.baseurl, database),
+    )
+    response.raise_for_status()
+
+    # Return the database name since it exists.
+    return {"user_name": requested_user, "database": database}
 
 
 @users_blueprint.route("/get_all_users", methods=["POST"])
@@ -289,65 +283,58 @@ def get_all_users():
         "secret_key": <>
     }
     """
-    # if "user_name" or "user_password" aren't there in json body raise a http 400.
-    if "secret_key" not in request.json:
-        return "Method not allowed", 400
 
-    secret_key = request.json["secret_key"]
-    # current_app holds the flask app context.
-    db_config = current_app.config
+    #
+    # Validate the contents of the request
+    #
+    schema = {
+        "type": "object",
+        "properties": {
+            "secret_key": {"type": "string"},
+        },
+    }
+    try:
+        jsonschema.validate(instance=request.json, schema=schema)
+    except (jsonschema.SchemaError, jsonschema.ValidationError) as error:
+        # TODO: A centralized error handler could do a better job of this
+        abort(
+            400,
+            jsonify(
+                message="Invalid contents.", schema=error.schema, error=error.message
+            ),
+        )
+
+    # Obtain contents of the request
+    client_secret_key = request.json["secret_key"]
 
     # As a simple security measure, check if secret key sent from Yasaman's client matches our secret key.
-    if secret_key != db_config["SECRET_KEY"]:
-        return "Method not allowed", 400
-
-    # Load the couchdb class.
-    couchdb_client_config = CouchDBClientConfig.load(
-        db_config["URI_DATABASE"], db_config["DB_USER"], db_config["DB_PASSWORD"]
-    )
+    if client_secret_key != current_app.config["CLIENT_SECRET_KEY"]:
+        abort(403, jsonify(message="Invalid secret."))  # 403 Forbidden
 
     #
-    # Obtain our connection information and admin credentials
+    # Connect to the database and create an admin session
     #
-    admin_auth = requests.auth.HTTPBasicAuth(
-        username=couchdb_client_config.user,
-        password=couchdb_client_config.password,
+    admin_config = CouchDBClientConfig(
+        baseurl=current_app.config["URI_DATABASE"],
+        user=current_app.config["DB_USER"],
+        password=current_app.config["DB_PASSWORD"],
     )
+    admin_session = _create_session(client_config=admin_config)
 
-    try:
-        # Open a session as admin
-        admin_session = requests.Session()
-        response = admin_session.post(
-            urljoin(couchdb_client_config.baseurl, "_session"),
-            json={
-                "name": admin_auth.username,
-                "password": admin_auth.password,
-            },
-        )
-        response.raise_for_status()
+    # Get all users.
+    # https://docs.couchdb.org/en/stable/intro/security.html#authentication-database
+    response = admin_session.get(
+        urljoin(admin_config.baseurl, "_users/{}".format("_all_docs")),
+    )
+    response.raise_for_status()
 
-        # Get all users.
-        # https://docs.couchdb.org/en/stable/intro/security.html#authentication-database
-        response = admin_session.get(
-            urljoin(couchdb_client_config.baseurl, "_users/{}".format("_all_docs")),
-        )
-        if response.status_code != 200:
-            # The _users database is empty?
-            return "There are no users.", 400
-        else:
-            # For each element in the list of _user documents, check if 'id' starts with 'org.couchdb.user:""
-            user_name_prefix = "org.couchdb.user:"
-            return [
-                user["id"].split(user_name_prefix)[1]
-                for user in response.json()["rows"]
-                if user_name_prefix in user["id"]
-            ]
-
-    except requests.exceptions.HTTPError:
-        return (
-            "Uh oh, something went down. Please get in touch with the administrator.",
-            500,
-        )
+    # For each element in the list of _user documents, check if 'id' starts with 'org.couchdb.user:""
+    user_name_prefix = "org.couchdb.user:"
+    return [
+        user["id"].split(user_name_prefix)[1]
+        for user in response.json()["rows"]
+        if user_name_prefix in user["id"]
+    ]
 
 
 def _database_for_user(*, user: str):
