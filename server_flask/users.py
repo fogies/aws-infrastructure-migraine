@@ -1,24 +1,23 @@
-from typing import Dict
 from flask import abort, Blueprint, current_app
 from flask import jsonify, request
 from flask_json import as_json
+import hashlib
 import jsonschema
-
-import requests
 import re
-from database import CouchDBClientConfig
-
 import requests
 import requests.auth
 import requests.exceptions
-
+from typing import Dict
 from urllib.parse import urljoin
-import hashlib
+
+
+import configparsers
+
 
 users_blueprint = Blueprint("users_blueprint", __name__)
 
 
-def _create_session(*, client_config: CouchDBClientConfig) -> requests.Session:
+def _create_session(*, client_config: configparsers.CouchDBClientConfig) -> requests.Session:
     """
     Obtain a session authenticated by the provided config.
     """
@@ -158,7 +157,7 @@ def create_user_accounts():
     # Connect to the database
     #
 
-    admin_config = CouchDBClientConfig(
+    admin_config = configparsers.CouchDBClientConfig(
         baseurl=current_app.config["DB_BASEURL"],
         user=current_app.config["DB_ADMIN_USER"],
         password=current_app.config["DB_ADMIN_PASSWORD"],
@@ -277,7 +276,7 @@ def get_user_profile():
     # Connect to the database
     #
 
-    admin_config = CouchDBClientConfig(
+    admin_config = configparsers.CouchDBClientConfig(
         baseurl=current_app.config["DB_BASEURL"],
         user=current_app.config["DB_ADMIN_USER"],
         password=current_app.config["DB_ADMIN_PASSWORD"],
@@ -341,7 +340,7 @@ def get_all_users():
     # Connect to the database
     #
 
-    admin_config = CouchDBClientConfig(
+    admin_config = configparsers.CouchDBClientConfig(
         baseurl=current_app.config["DB_BASEURL"],
         user=current_app.config["DB_ADMIN_USER"],
         password=current_app.config["DB_ADMIN_PASSWORD"],
