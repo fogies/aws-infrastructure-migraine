@@ -59,7 +59,10 @@ def _database_for_user(*, user: str):
 
 def _validate_request_json_schema(*, instance: Dict, schema: Dict):
     # NOTE - In spirit of James' TODO message - A centralized error handler could do a better job of this
-    """Validates schema_instance by comparing it with schema. Raises a 400 if schema_instance in invalid.
+    """
+    Validate schema_instance against schema.
+
+    Raise 400 on failure.
 
     Args:
         instance (Dict): Schema instance which needs to validated
@@ -74,6 +77,17 @@ def _validate_request_json_schema(*, instance: Dict, schema: Dict):
                 message="Invalid contents.", schema=error.schema, error=error.message
             ),
         )
+
+
+def _validate_secret_key(*, secret_key: str):
+    """
+    Validate the provided secret key matches are required secret key.
+
+    Raise 403 on failure.
+    """
+    # Require clients provide a secret
+    if secret_key != current_app.config["CLIENT_SECRET_KEY"]:
+        abort(403, jsonify(message="Invalid secret key."))  # 403 Forbidden
 
 
 def _validate_user(*, user: str) -> bool:
@@ -131,15 +145,11 @@ def create_user_accounts():
         "required": ["user_name", "user_password", "secret_key"],
     }
     _validate_request_json_schema(instance=request.json, schema=schema)
+    _validate_secret_key(secret_key=request.json["secret_key"])
 
     # Obtain contents of the request
     requested_user = request.json["user_name"]
     requested_password = request.json["user_password"]
-    client_secret_key = request.json["secret_key"]
-
-    # Require clients provide a secret
-    if client_secret_key != current_app.config["CLIENT_SECRET_KEY"]:
-        abort(403, jsonify(message="Invalid secret."))  # 403 Forbidden
 
     # Ensure the user_name is valid
     if not _validate_user(user=requested_user):
@@ -259,14 +269,10 @@ def get_user_profile():
         "required": ["user_name", "secret_key"],
     }
     _validate_request_json_schema(instance=request.json, schema=schema)
+    _validate_secret_key(secret_key=request.json["secret_key"])
 
     # Obtain contents of the request
     requested_user = request.json["user_name"]
-    client_secret_key = request.json["secret_key"]
-
-    # Require clients provide a secret
-    if client_secret_key != current_app.config["CLIENT_SECRET_KEY"]:
-        abort(403, jsonify(message="Invalid secret."))  # 403 Forbidden
 
     # Ensure the user_name is valid
     if not _validate_user(user=requested_user):
@@ -335,13 +341,7 @@ def get_all_users():
         "required": ["secret_key"],
     }
     _validate_request_json_schema(instance=request.json, schema=schema)
-
-    # Obtain contents of the request
-    client_secret_key = request.json["secret_key"]
-
-    # Require clients provide a secret
-    if client_secret_key != current_app.config["CLIENT_SECRET_KEY"]:
-        abort(403, jsonify(message="Invalid secret."))  # 403 Forbidden
+    _validate_secret_key(secret_key=request.json["secret_key"])
 
     #
     # Connect to the database and create an admin session
