@@ -164,7 +164,6 @@ def create_user_accounts():
         user=current_app.config["DB_USER"],
         password=current_app.config["DB_PASSWORD"],
     )
-
     admin_session = _create_session(client_config=admin_config)
 
     #
@@ -257,6 +256,7 @@ def get_user_profile():
 
     TODO: Before reusing code, check on proper REST verbs.
     """
+
     #
     # Validate the contents of the request
     #
@@ -283,7 +283,6 @@ def get_user_profile():
         user=current_app.config["DB_USER"],
         password=current_app.config["DB_PASSWORD"],
     )
-
     admin_session = _create_session(client_config=admin_config)
 
     #
@@ -324,9 +323,11 @@ def get_all_users():
 
     TODO: Before reusing code, check on proper REST verbs.
     """
+
     #
     # Validate the contents of the request
     #
+
     schema = {
         "type": "object",
         "properties": {
@@ -338,8 +339,9 @@ def get_all_users():
     _validate_secret_key(secret_key=request.json["secret_key"])
 
     #
-    # Connect to the database and create an admin session
+    # Connect to the database
     #
+
     admin_config = CouchDBClientConfig(
         baseurl=current_app.config["URI_DATABASE"],
         user=current_app.config["DB_USER"],
