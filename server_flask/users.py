@@ -114,6 +114,7 @@ def create_user_accounts():
         "database": "database name we create for the user."
     }
 
+    TODO: Before reusing code, check on proper REST verbs.
     """
 
     #
@@ -136,7 +137,7 @@ def create_user_accounts():
     requested_password = request.json["user_password"]
     client_secret_key = request.json["secret_key"]
 
-    # Require clients provide a secret for account creation
+    # Require clients provide a secret
     if client_secret_key != current_app.config["CLIENT_SECRET_KEY"]:
         abort(403, jsonify(message="Invalid secret."))  # 403 Forbidden
 
@@ -244,6 +245,7 @@ def get_user_profile():
         "database": "existing database for the user."
     }
 
+    TODO: Before reusing code, check on proper REST verbs.
     """
     #
     # Validate the contents of the request
@@ -262,7 +264,7 @@ def get_user_profile():
     requested_user = request.json["user_name"]
     client_secret_key = request.json["secret_key"]
 
-    # Require clients provide a secret for account creation
+    # Require clients provide a secret
     if client_secret_key != current_app.config["CLIENT_SECRET_KEY"]:
         abort(403, jsonify(message="Invalid secret."))  # 403 Forbidden
 
@@ -319,6 +321,8 @@ def get_all_users():
     {
         "secret_key": <>
     }
+
+    TODO: Before reusing code, check on proper REST verbs.
     """
     #
     # Validate the contents of the request
@@ -335,7 +339,7 @@ def get_all_users():
     # Obtain contents of the request
     client_secret_key = request.json["secret_key"]
 
-    # As a simple security measure, check if secret key sent from Yasaman's client matches our secret key.
+    # Require clients provide a secret
     if client_secret_key != current_app.config["CLIENT_SECRET_KEY"]:
         abort(403, jsonify(message="Invalid secret."))  # 403 Forbidden
 
