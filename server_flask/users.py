@@ -159,9 +159,9 @@ def create_user_accounts():
     #
 
     admin_config = CouchDBClientConfig(
-        baseurl=current_app.config["URI_DATABASE"],
-        user=current_app.config["DB_USER"],
-        password=current_app.config["DB_PASSWORD"],
+        baseurl=current_app.config["DB_BASEURL"],
+        user=current_app.config["DB_ADMIN_USER"],
+        password=current_app.config["DB_ADMIN_PASSWORD"],
     )
     admin_session = _create_session(client_config=admin_config)
 
@@ -278,9 +278,9 @@ def get_user_profile():
     #
 
     admin_config = CouchDBClientConfig(
-        baseurl=current_app.config["URI_DATABASE"],
-        user=current_app.config["DB_USER"],
-        password=current_app.config["DB_PASSWORD"],
+        baseurl=current_app.config["DB_BASEURL"],
+        user=current_app.config["DB_ADMIN_USER"],
+        password=current_app.config["DB_ADMIN_PASSWORD"],
     )
     admin_session = _create_session(client_config=admin_config)
 
@@ -342,9 +342,9 @@ def get_all_users():
     #
 
     admin_config = CouchDBClientConfig(
-        baseurl=current_app.config["URI_DATABASE"],
-        user=current_app.config["DB_USER"],
-        password=current_app.config["DB_PASSWORD"],
+        baseurl=current_app.config["DB_BASEURL"],
+        user=current_app.config["DB_ADMIN_USER"],
+        password=current_app.config["DB_ADMIN_PASSWORD"],
     )
     admin_session = _create_session(client_config=admin_config)
 
