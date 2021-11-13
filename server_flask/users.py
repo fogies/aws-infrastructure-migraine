@@ -43,6 +43,20 @@ def _create_session(*, client_config: CouchDBClientConfig) -> requests.Session:
     return session
 
 
+def _database_for_user(*, user: str):
+    """
+    Obtain the name of the database for a specified user.
+
+    CouchDB requirement of database names:
+    - Only lowercase characters (a-z), digits (0-9), and any of the characters _$()+-/ are allowed.
+    - Must begin with a letter.
+
+    Database names will therefore be 'user_' followed by hex encoding of an MD5 hash of the user name.
+    """
+
+    return "user_{}".format(hashlib.md5(user.encode("utf-8")).digest().hex())
+
+
 def _validate_request_json_schema(*, instance: Dict, schema: Dict):
     # NOTE - In spirit of James' TODO message - A centralized error handler could do a better job of this
     """Validates schema_instance by comparing it with schema. Raises a 400 if schema_instance in invalid.
@@ -60,6 +74,25 @@ def _validate_request_json_schema(*, instance: Dict, schema: Dict):
                 message="Invalid contents.", schema=error.schema, error=error.message
             ),
         )
+
+
+def _validate_user(*, user: str) -> bool:
+    """
+    Determine whether a provided user name is allowable.
+
+    At least characters :+ are not allowed in CouchDB user names, possibly others.
+    Instead of requiring encoding of user names, require that names are alphanumeric with ._ allowed.
+    """
+
+    # Forbid user that start with 'user_', as that conflicts with our database encoding
+    if user.startswith("user_"):
+        return False
+
+    # Limit to 32 characters, just to avoid any issues
+    if len(user) > 32:
+        return False
+
+    return re.match(pattern="^[a-zA-Z0-9_.]+$", string=user) is not None
 
 
 @users_blueprint.route("/create_account", methods=["POST"])
@@ -330,36 +363,3 @@ def get_all_users():
         for user in response.json()["rows"]
         if user_name_prefix in user["id"]
     ]
-
-
-def _database_for_user(*, user: str):
-    """
-    Obtain the name of the database for a specified user.
-
-    CouchDB requirement of database names:
-    - Only lowercase characters (a-z), digits (0-9), and any of the characters _$()+-/ are allowed.
-    - Must begin with a letter.
-
-    Database names will therefore be 'user_' followed by hex encoding of an MD5 hash of the user name.
-    """
-
-    return "user_{}".format(hashlib.md5(user.encode("utf-8")).digest().hex())
-
-
-def _validate_user(*, user: str) -> bool:
-    """
-    Determine whether a provided user name is allowable.
-
-    At least characters :+ are not allowed in CouchDB user names, possibly others.
-    Instead of requiring encoding of user names, require that names are alphanumeric with ._ allowed.
-    """
-
-    # Forbid user that start with 'user_', as that conflicts with our database encoding
-    if user.startswith("user_"):
-        return False
-
-    # Limit to 32 characters, just to avoid any issues
-    if len(user) > 32:
-        return False
-
-    return re.match(pattern="^[a-zA-Z0-9_.]+$", string=user) is not None
