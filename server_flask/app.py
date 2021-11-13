@@ -16,13 +16,13 @@ def create_app():
 
     flask_environment = os.getenv("FLASK_ENV")
     if flask_environment == "production":
-        from config.prod import Config
+        from config.prod import ProductionConfig
 
-        app.config.from_object(Config())
+        app.config.from_object(ProductionConfig())
     elif flask_environment == "development":
-        from config.dev import Config
+        from config.dev import DevelopmentConfig
 
-        app.config.from_object(Config())
+        app.config.from_object(DevelopmentConfig())
     else:
         raise ValueError
 

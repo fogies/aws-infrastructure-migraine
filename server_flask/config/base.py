@@ -38,6 +38,6 @@ class Config:
 
         self.SECRET_KEY = secret_key
         self.CLIENT_SECRET_KEY = client_secret_key
-        self.DB_BASEURL = DB_BASEURL
+        self.DB_BASEURL = db_baseurl
         self.DB_ADMIN_USER = db_admin_user
         self.DB_ADMIN_PASSWORD = db_admin_password
