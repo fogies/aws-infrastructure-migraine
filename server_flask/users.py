@@ -58,7 +58,6 @@ def _database_for_user(*, user: str):
 
 
 def _validate_request_json_schema(*, instance: Dict, schema: Dict):
-    # NOTE - In spirit of James' TODO message - A centralized error handler could do a better job of this
     """
     Validate schema_instance against schema.
 
@@ -357,6 +356,8 @@ def get_all_users():
     response.raise_for_status()
 
     # For each element in the list of _user documents, check if 'id' starts with 'org.couchdb.user:""
+    #
+    # This would be easier to read with a small regex match test, but this is fine for now.
     user_name_prefix = "org.couchdb.user:"
     return [
         user["id"].split(user_name_prefix)[1]
