@@ -286,30 +286,28 @@ def get_user_profile():
 
     admin_session = _create_session(client_config=admin_config)
 
+    #
+    # Validate the state of the database
+    #
+
     # ID of the user document and its content
     user_doc_id = "org.couchdb.user:{}".format(requested_user)
 
-    # Check whether the user already exists (e.g., from a previous initialize)
+    # Confirm the user exists
     response = admin_session.get(
         urljoin(admin_config.baseurl, "_users/{}".format(user_doc_id)),
     )
-    response.raise_for_status()
+    if not response.ok:
+        abort(404, jsonify(message="User not found."))  # 404 Not Found
 
-    # NOTE: @James: Instead of `response.raise_for_status()`, should we send more usable abort messages if username and/or database doesn't exist? Example provided as comment below.
-    """
-    if response.status_code != 200:
-        # The user does not exist. Return with 404
-        abort(404, jsonify(message="The user does not exist."))  # 409 Conflict
-    """
-
-    # The user exists, check if database exists.
+    # User exists, confirm database exists
     database = _database_for_user(user=requested_user)
     response = admin_session.head(
         urljoin(admin_config.baseurl, database),
     )
     response.raise_for_status()
 
-    # Return the database name since it exists.
+    # Return the profile
     return {"user_name": requested_user, "database": database}
 
 
