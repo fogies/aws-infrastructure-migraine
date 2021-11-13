@@ -8,6 +8,7 @@ import tasks.dependencies
 import tasks.flask
 import tasks.helm
 import tasks.helmfile
+import tasks.codebuild.server_flask
 import tasks.terraform.dns
 import tasks.terraform.ecr
 import tasks.terraform.eip
@@ -17,6 +18,11 @@ import tasks.terraform_old.eip
 import tasks.terraform_old.instance
 
 ns = Collection()
+
+# Compose from codebuild
+ns_codebuild = Collection('codebuild')
+compose_collection(ns_codebuild, tasks.codebuild.server_flask.ns, name='flask')
+compose_collection(ns, ns_codebuild, name='codebuild')
 
 # Compose from database.py
 compose_collection(ns, tasks.database.ns, name='database')
