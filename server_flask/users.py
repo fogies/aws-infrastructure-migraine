@@ -274,10 +274,6 @@ def get_user_profile():
     # Obtain contents of the request
     requested_user = request.json["user_name"]
 
-    # Ensure the user_name is valid
-    if not _validate_user(user=requested_user):
-        abort(403, jsonify(message="User not allowed."))  # 403 Forbidden
-
     #
     # Connect to the database
     #
