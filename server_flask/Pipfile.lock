@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "7691572fd6425b1a2945921c069e1e87bcb6a69684e5ed9bd887573d4e55697c"
+            "sha256": "801660e73ecb8b04762246d93b1dd7cd18ea78f11b31394d832a2373c2aaf9f6"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -186,6 +186,10 @@
             "markers": "python_version >= '3.6'",
             "version": "==2.0.1"
         },
+        "migraine-shared": {
+            "editable": true,
+            "path": "./../migraine_shared"
+        },
         "pyrsistent": {
             "hashes": [
                 "sha256:097b96f129dd36a8c9e33594e7ebb151b1515eb52cceb08474c10a5479e799f2",
@@ -226,7 +230,7 @@
                 "sha256:9751de4cbb57d4bfbf8fc394e125ed4a2f170fbff3dc3d78abf50be85924f8be",
                 "sha256:9af3ec5d7f8065582f3aa841305465025d0afd26c5fb54e15b964e11838fc74f"
             ],
-            "index": "pypi",
+            "markers": "python_version >= '3'",
             "version": "==0.17.17"
         },
         "ruamel.yaml.clib": {

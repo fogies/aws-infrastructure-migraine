@@ -3,8 +3,6 @@ Tasks for the Flask server.
 """
 
 from aws_infrastructure.tasks.collection import compose_collection
-import aws_infrastructure.tasks.library.documentdb
-import aws_infrastructure.tasks.ssh
 from invoke import Collection
 from invoke import task
 from pathlib import Path
@@ -12,8 +10,6 @@ from pathlib import Path
 from tasks.terminal import spawn_new_terminal
 
 FLASK_DIR = './server_flask'
-SSH_CONFIG_PATH = './secrets/server/prod/ssh_config.yaml'
-DOCUMENTDB_CONFIG_PATH = './secrets/server/prod/documentdb_config.yaml'
 
 
 @task
@@ -27,11 +23,13 @@ def dev_serve(context):
     if spawn_new_terminal(context):
         with context.cd(Path(FLASK_DIR)):
             context.run(
+                # Instead of using `flask run`, import the app normally, then run it.
+                # Did this because `flask run` was eating an ImportError, not giving a useful error message.
                 command=' '.join([
                     'pipenv',
                     'run',
-                    'flask',
-                    'run',
+                    'python',
+                    'app.py',
                 ]),
                 env={
                     'FLASK_ENV': 'development',

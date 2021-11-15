@@ -11,13 +11,13 @@ from typing import Dict
 from urllib.parse import urljoin
 
 
-import configparsers
+import migraine_shared.config
 
 
 users_blueprint = Blueprint("users_blueprint", __name__)
 
 
-def _create_session(*, client_config: configparsers.CouchDBClientConfig) -> requests.Session:
+def _create_session(*, client_config: migraine_shared.config.CouchDBClientConfig) -> requests.Session:
     """
     Obtain a session authenticated by the provided config.
     """
@@ -157,7 +157,7 @@ def create_user_accounts():
     # Connect to the database
     #
 
-    admin_config = configparsers.CouchDBClientConfig(
+    admin_config = migraine_shared.config.CouchDBClientConfig(
         baseurl=current_app.config["DB_BASEURL"],
         user=current_app.config["DB_ADMIN_USER"],
         password=current_app.config["DB_ADMIN_PASSWORD"],
@@ -276,7 +276,7 @@ def get_user_profile():
     # Connect to the database
     #
 
-    admin_config = configparsers.CouchDBClientConfig(
+    admin_config = migraine_shared.config.CouchDBClientConfig(
         baseurl=current_app.config["DB_BASEURL"],
         user=current_app.config["DB_ADMIN_USER"],
         password=current_app.config["DB_ADMIN_PASSWORD"],
@@ -340,7 +340,7 @@ def get_all_users():
     # Connect to the database
     #
 
-    admin_config = configparsers.CouchDBClientConfig(
+    admin_config = migraine_shared.config.CouchDBClientConfig(
         baseurl=current_app.config["DB_BASEURL"],
         user=current_app.config["DB_ADMIN_USER"],
         password=current_app.config["DB_ADMIN_PASSWORD"],

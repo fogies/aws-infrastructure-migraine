@@ -8,8 +8,8 @@ flask = "*"
 flask-cors = "*"
 flask-json = "*"
 jsonschema = "*"
+migraine_shared = {editable = true, path = "../migraine_shared"}
 requests = "*"
-"ruamel.yaml" = "*"
 waitress = "*"
 
 [dev-packages]
