@@ -1,10 +1,14 @@
+#
+# Capture all traffic that attempts to access /db/.
+#
+
 # https://doc.traefik.io/traefik/middlewares/stripprefix/
 
 apiVersion: 'traefik.containo.us/v1alpha1'
 kind: 'Middleware'
 
 metadata:
-  name: 'ingress-couchdb-web-stripprefix-db'
+  name: 'ingress-couchdb-stripprefix-db'
   labels:
     app: 'migraine'
 
@@ -23,7 +27,7 @@ apiVersion: 'traefik.containo.us/v1alpha1'
 kind: 'IngressRoute'
 
 metadata:
-  name: 'ingress-couchdb-web'
+  name: 'ingress-couchdb'
   labels:
     app: 'migraine'
 
@@ -37,7 +41,7 @@ spec:
       middlewares:
         - name: 'enable-cors'
           namespace: 'ingress'
-        - name: 'ingress-couchdb-web-stripprefix-db'
+        - name: 'ingress-couchdb-stripprefix-db'
       services:
         - kind: 'Service'
           name: 'migraine-database-svc-couchdb'

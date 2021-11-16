@@ -14,6 +14,6 @@ module "ecr" {
   source = "github.com/fogies/aws-infrastructure//terraform_common/ecr"
 
   names = [
-    "aws_infrastructure_migraine/server_flask",
+    "aws_infrastructure_migraine/migraine_flask",
   ]
 }
