@@ -62,7 +62,7 @@ COPY --from=stage_git /cloned_repository .
 RUN pip install pipenv
 
 # Sync root pipenv
-RUN pipenv sync --system
+RUN pipenv sync
 
 # Sync server_flask pipenv
 WORKDIR /cloned_repository/server_flask

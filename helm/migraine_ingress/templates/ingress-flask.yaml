@@ -1,0 +1,44 @@
+#
+# Capture all traffic that attempts to access /api/.
+#
+
+# https://doc.traefik.io/traefik/middlewares/stripprefix/
+
+apiVersion: 'traefik.containo.us/v1alpha1'
+kind: 'Middleware'
+
+metadata:
+  name: '{{ .Release.Name }}-stripprefix-api'
+
+spec:
+  stripPrefix:
+    prefixes:
+      - '/api'
+    forceSlash: false
+
+---
+
+# https://doc.traefik.io/traefik/routing/providers/kubernetes-crd/
+# https://doc.traefik.io/traefik/routing/routers/
+
+apiVersion: 'traefik.containo.us/v1alpha1'
+kind: 'IngressRoute'
+
+metadata:
+  name: '{{ .Release.Name }}-app'
+
+spec:
+  entryPoints:
+    - 'web'
+  routes:
+    - kind: 'Rule'
+      match: 'HostRegexp(`{any:.+}`) && PathPrefix(`/api/`)'
+      priority: 10000
+      middlewares:
+        - name: '{{ .Release.Name }}-stripprefix-api'
+      services:
+        - kind: 'Service'
+          name: {{ .Values.serviceFlask | squote }}
+          port: 8000
+#  tls:
+#    secretName: {{ .Values.tlsSecret | squote }}

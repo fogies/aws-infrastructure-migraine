@@ -6,15 +6,15 @@ from invoke import Collection
 
 import tasks.terraform.ecr
 
-CONFIG_KEY = 'server_flask'
+CONFIG_KEY = 'codebuid/migraine_flask'
 TERRAFORM_BIN = './bin/terraform.exe'
-TERRAFORM_DIR = './terraform/terraform_codebuild/server_flask'
-STAGING_LOCAL_DIR = './.staging/codebuild/server_flask'
+TERRAFORM_DIR = './terraform/terraform_codebuild/migraine_flask'
+STAGING_LOCAL_DIR = './.staging/codebuild/migraine_flask'
 AWS_PROFILE = 'aws-infrastructure-migraine'
 AWS_SHARED_CREDENTIALS_PATH = './secrets/aws/aws-infrastructure-migraine.credentials'
 AWS_CONFIG_PATH = './secrets/aws/aws-infrastructure-migraine.config'
-SOURCE_DIR = './docker/server_flask'
-CODEBUILD_PROJECT_NAME = 'aws_infrastructure_migraine_server_flask'
+SOURCE_DIR = './docker/migraine_flask'
+CODEBUILD_PROJECT_NAME = 'aws_infrastructure_migraine_migraine_flask'
 
 BUILD_TIMESTAMP = datetime.now().strftime('%Y%m%d%H%M')
 
@@ -23,13 +23,13 @@ def codebuild_environment_variables_factory(*, context):
     with tasks.terraform.ecr.ecr_read_only(context=context) as ecr:
         return {
             'REGISTRY_URL': ecr.output.registry_url,
-            'REPOSITORY': 'aws_infrastructure_migraine/server_flask',
-            'REPOSITORY_URL': ecr.output.repository_urls['aws_infrastructure_migraine/server_flask'],
+            'REPOSITORY': 'aws_infrastructure_migraine/migraine_flask',
+            'REPOSITORY_URL': ecr.output.repository_urls['aws_infrastructure_migraine/migraine_flask'],
             'REPOSITORY_TAGS': 'latest {}'.format(BUILD_TIMESTAMP)
         }
 
 
-ns = Collection('codebuild')
+ns = Collection('codebuild/migraine_flask')
 
 ns_codebuild = aws_infrastructure.tasks.library.codebuild.create_tasks(
     config_key=CONFIG_KEY,

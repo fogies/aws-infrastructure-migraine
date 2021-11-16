@@ -79,6 +79,8 @@ releases:
     chart: './charts/migraine-flask.tgz'
     values:
       - './values/ecr_generated.values.yaml'
+      - imageName: 'aws_infrastructure_migraine/migraine_flask'
+        imageTag: 'latest'
 
   # migraine-ingress
   # Installed from a local chart, managed in helmfile-config.yaml
@@ -87,6 +89,8 @@ releases:
     chart: './charts/migraine-ingress.tgz'
     needs:
       - 'ingress'
+    values:
+      - serviceFlask: 'migraine-flask'
 
 helmDefaults:
   # Prefer explicit management of CRDs via releases

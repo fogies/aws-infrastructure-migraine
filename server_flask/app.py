@@ -16,13 +16,13 @@ def create_app():
 
     flask_environment = os.getenv("FLASK_ENV")
     if flask_environment == "production":
-        from config.prod import Config
+        from config.prod import ProductionConfig
 
-        app.config.from_object(Config())
+        app.config.from_object(ProductionConfig())
     elif flask_environment == "development":
-        from config.dev import Config
+        from config.dev import DevelopmentConfig
 
-        app.config.from_object(Config())
+        app.config.from_object(DevelopmentConfig())
     else:
         raise ValueError
 
@@ -39,3 +39,14 @@ def create_app():
     app.register_blueprint(users_blueprint, url_prefix='/users')
 
     return app
+
+
+# Instead of using `flask run`, import the app normally, then run it.
+# Did this because `flask run` was eating an ImportError, not giving a useful error message.
+if __name__ == '__main__':
+    app = create_app()
+
+    app.run(
+        host=os.getenv('FLASK_RUN_HOST'),
+        port=os.getenv('FLASK_RUN_PORT'),
+    )
