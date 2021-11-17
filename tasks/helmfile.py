@@ -16,7 +16,7 @@ HELMFILE_PATH = './helmfile/helmfile.yaml'
 HELMFILE_CONFIG_PATH = './helmfile/helmfile_config.yaml'
 SSH_CONFIG_PATH = Path(INSTANCE_TERRAFORM_DIR, INSTANCE_NAME, 'ssh_config.yaml')
 
-COUCHDB_CONFIG_PATH = './secrets/configuration/couchdb_config.yaml'
+COUCHDB_CONFIG_PATH = './secrets/configuration/dev_couchdb.yaml'
 
 
 # Helmfile deployment requires information on CouchDB configuration

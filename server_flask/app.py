@@ -18,7 +18,7 @@ def create_app():
     if flask_environment == "production":
         from config.prod import ProductionConfig
 
-        app.config.from_object(ProductionConfig())
+        app.config.from_object(ProductionConfig(instance_dir=app.instance_path))
     elif flask_environment == "development":
         from config.dev import DevelopmentConfig
 

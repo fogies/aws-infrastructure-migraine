@@ -29,7 +29,7 @@ compose_collection(
         terraform_dir=TERRAFORM_DIR,
         exclude=[
             'init',
-            # 'output',
+            'output',
         ],
         exclude_without_state=[
             'destroy',

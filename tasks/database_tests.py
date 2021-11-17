@@ -8,11 +8,11 @@ import requests.exceptions
 import ruamel.yaml
 from urllib.parse import urljoin
 
-from tasks.database import _database_for_user
-from tasks.database import _validate_user
-from tasks.database import CouchDBClientConfig
+from migraine_shared.database import _database_for_user
+from migraine_shared.database import _validate_user
+from migraine_shared.config import CouchDBConfig
 
-COUCHDB_CLIENT_CONFIG_PATH = "./secrets/client/couchdb_client_config.yaml"
+COUCHDB_CLIENT_CONFIG_PATH = "./secrets/configuration/dev_couchdb.yaml"
 
 COUCHDB_TEST_ACCOUNTS_CONFIG_PATH = "./secrets/tests/accounts_config.yaml"
 
@@ -35,12 +35,12 @@ def create_accounts(context):
     #
     # Obtain our connection information and admin credentials
     #
-    couchdb_client_config = CouchDBClientConfig.load(
+    couchdb_client_config = CouchDBConfig.load(
         couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH
     )
     admin_auth = requests.auth.HTTPBasicAuth(
-        username=couchdb_client_config.user,
-        password=couchdb_client_config.password,
+        username=couchdb_client_config.admin_user,
+        password=couchdb_client_config.admin_password,
     )
 
     try:
@@ -149,7 +149,7 @@ def test_accounts(context):
     #
     # Obtain our connection information
     #
-    couchdb_client_config = CouchDBClientConfig.load(
+    couchdb_client_config = CouchDBConfig.load(
         couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH
     )
 
@@ -219,12 +219,12 @@ def delete_accounts(context):
     #
     # Obtain our connection information and admin credentials
     #
-    couchdb_client_config = CouchDBClientConfig.load(
+    couchdb_client_config = CouchDBConfig.load(
         couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH
     )
     admin_auth = requests.auth.HTTPBasicAuth(
-        username=couchdb_client_config.user,
-        password=couchdb_client_config.password,
+        username=couchdb_client_config.admin_user,
+        password=couchdb_client_config.admin_password,
     )
 
     try:
@@ -280,12 +280,12 @@ def get_accounts(context):
     #
     # Obtain our connection information and admin credentials
     #
-    couchdb_client_config = CouchDBClientConfig.load(
+    couchdb_client_config = CouchDBConfig.load(
         couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH
     )
     admin_auth = requests.auth.HTTPBasicAuth(
-        username=couchdb_client_config.user,
-        password=couchdb_client_config.password,
+        username=couchdb_client_config.admin_user,
+        password=couchdb_client_config.admin_password,
     )
 
     try:
