@@ -12,6 +12,8 @@ name = "pypi"
 pipenv = "*"
 requests = "*"
 
+migraine_shared = {editable = true, path = "./migraine_shared"}
+
 [packages.aws-infrastructure]
 git = "https://github.com/fogies/aws-infrastructure.git"
 subdirectory = "aws_infrastructure"
