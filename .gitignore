@@ -23,8 +23,6 @@ terraform.tfstate.lock.info
 # Exception to create /secrets/
 !/secrets/aws
 !/secrets/aws/.gitignore
-!/secrets/client
-!/secrets/client/.gitignore
 !/secrets/configuration
 !/secrets/configuration/.gitignore
 !/secrets/tests
