@@ -1,1 +1,3 @@
+# Build Artifacts
 /build
+/*.egg-info

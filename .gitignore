@@ -4,8 +4,7 @@
 # Binaries (e.g., Helm, Packer, Terraform)
 /bin/
 
-# Python Cache and Packaging
-*.egg-info/
+# Python Cache
 **/__pycache__/
 
 # Terraform Local State
