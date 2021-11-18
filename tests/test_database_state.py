@@ -1,4 +1,7 @@
-from pathlib import Path
+"""
+Tests for confirming existence and expected state of our databases.
+"""
+
 import pytest
 import requests
 import requests.auth
@@ -23,18 +26,12 @@ def couchdb_config(request) -> migraine_shared.config.CouchDBConfig:
 
     config_path = request.param
 
-    # Skip configurations that do not exist
-    if not Path(config_path).exists():
-        pytest.skip()
-
     return migraine_shared.config.CouchDBConfig.load(config_path)
 
 
-def test_database_exists(couchdb_config):
+def test_database_initialized(couchdb_config):
     """
     Test existence of the database.
-
-    Uses admin credentials to verify the database has been initialized.
     """
 
     # Confirm the database is online.

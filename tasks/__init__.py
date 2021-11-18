@@ -3,7 +3,6 @@ from invoke import Collection
 
 import tasks.celery
 import tasks.database
-import tasks.database_tests
 import tasks.dependencies
 import tasks.flask
 import tasks.helm
@@ -26,7 +25,6 @@ compose_collection(ns, ns_codebuild, name='codebuild')
 
 # Compose from database.py
 compose_collection(ns, tasks.database.ns, name='database')
-compose_collection(ns.collections['database'], tasks.database_tests.ns, name='tests')
 
 # Compose from dependencies.py
 compose_collection(ns, tasks.dependencies.ns, name='depend')

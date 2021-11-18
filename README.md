@@ -228,22 +228,12 @@ Runtime secrets are expected in the `secrets` directory.
 
 Secrets needed for AWS CLI access are in `secrets/aws`.
 
+- `secrets/aws/aws-infrastructure-migraine.config`
 - `secrets/aws/aws-infrastructure-migraine.credentials`
 
 Secrets needed for infrastructure configuration are in `secrets/configuration`.
 
-- `secrets/configuration/couchdb_config.yaml`
-
-  Secret for configuring CouchDB.
-
-Secrets needed by clients are in `secrets/client`.
-
-- `secrets/client/couchdb_client_config.yaml`
-
-  Secret for clients connecting to CouchDB.
-
-Secrets needed for testing are in `secrets/tests`.
-
-- `secrets/tests/accounts_config.yaml`
-
-  Secret for test accounts.
+- `secrets/configuration/dev_couchdb.yaml`
+- `secrets/configuration/dev_flask.yaml`
+- `secrets/configuration/prod_couchdb.yaml`
+- `secrets/configuration/prod_flask.yaml`
