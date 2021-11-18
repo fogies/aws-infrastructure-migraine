@@ -34,7 +34,8 @@ class CouchDBConfig:
         couchdb_client_config_path = Path(couchdb_client_config_path)
 
         with open(couchdb_client_config_path) as config_file:
-            yaml_config = ruamel.yaml.safe_load(config_file)
+            yaml = ruamel.yaml.YAML(typ="safe", pure=True)
+            yaml_config = yaml.load(config_file)
 
         return CouchDBConfig.parse(yaml_config)
 
@@ -103,7 +104,8 @@ class FlaskConfig:
         flask_config_path = Path(flask_config_path)
 
         with open(flask_config_path) as config_file:
-            yaml_config = ruamel.yaml.safe_load(config_file)
+            yaml = ruamel.yaml.YAML(typ="safe", pure=True)
+            yaml_config = yaml.load(config_file)
 
         return FlaskConfig.parse(yaml_config)
 
