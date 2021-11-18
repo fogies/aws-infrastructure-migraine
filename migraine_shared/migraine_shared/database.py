@@ -1,7 +1,7 @@
 import hashlib
 import re
 
-def _database_for_user(*, user: str):
+def database_for_user(*, user: str):
     """
     Obtain the name of the database for a specified user.
 
@@ -15,7 +15,7 @@ def _database_for_user(*, user: str):
     return 'user_{}'.format(hashlib.md5(user.encode('utf-8')).digest().hex())
 
 
-def _validate_user(*, user: str) -> bool:
+def validate_user(*, user: str) -> bool:
     """
     Determine whether a provided user name is allowable.
 
