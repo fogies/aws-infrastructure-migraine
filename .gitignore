@@ -4,8 +4,9 @@
 # Binaries (e.g., Helm, Packer, Terraform)
 /bin/
 
-# Python Cache
+# Python Caches
 **/__pycache__/
+**/.pytest_cache/
 
 # Terraform Local State
 .terraform
