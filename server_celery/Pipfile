@@ -7,6 +7,7 @@ name = "pypi"
 celery = "*"
 
 [dev-packages]
+pytest = "*"
 # Used by Celery filesystem broker in Windows development
 pypiwin32 = {version = "*", sys_platform = "== 'win32'"}
 # Dependencies of pypiwin32 must explicitly mark sys_platform per issue https://github.com/pypa/pipenv/issues/4117
