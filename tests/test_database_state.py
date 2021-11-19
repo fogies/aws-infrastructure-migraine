@@ -21,7 +21,7 @@ PROD_COUCHDB_CONFIG_PATH = "./secrets/configuration/prod_couchdb.yaml"
 )
 def couchdb_config(request) -> migraine_shared.config.CouchDBConfig:
     """
-    Fixture providing database configurations.
+    Fixture providing CouchDB configurations.
     """
 
     config_path = request.param
