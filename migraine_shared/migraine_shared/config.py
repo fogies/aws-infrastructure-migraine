@@ -76,7 +76,7 @@ class FlaskConfig:
     Parse configuration for a Flask instance.
     """
 
-    _base_url: str
+    _baseurl: str
     _secret_key: str
 
     _database_baseurl: str
@@ -93,7 +93,7 @@ class FlaskConfig:
         database_admin_user: str,
         database_admin_password: str,
     ):
-        self._base_url = baseurl
+        self._baseurl = baseurl
         self._secret_key = secret_key
         self._database_baseurl = database_baseurl
         self._database_admin_user = database_admin_user
