@@ -29,19 +29,27 @@ def couchdb_config(request) -> migraine_shared.config.CouchDBConfig:
     return migraine_shared.config.CouchDBConfig.load(config_path)
 
 
-def test_database_initialized(couchdb_config):
+def test_database_reachable(couchdb_config):
     """
-    Test existence of the database.
+    Test database is responding at expected baseurl.
     """
 
-    # Confirm the database is online.
     session = requests.session()
     response = session.get(
         urljoin(couchdb_config.baseurl, ''),
     )
     assert response.ok
 
-    # Credentials for admin authentication.
+
+def test_database_initialized(couchdb_config):
+    """
+    Test database has been properly initialized.
+
+    CouchDB requires initialization request after the cluster is created.
+    """
+
+    # Credentials for basic authentication as admin.
+    # If the database were not initialized, session-based authentication would fail.
     admin_auth = requests.auth.HTTPBasicAuth(
         username=couchdb_config.admin_user,
         password=couchdb_config.admin_password
