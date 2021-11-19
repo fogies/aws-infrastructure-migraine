@@ -1,6 +1,9 @@
 ################################################################################
 # Defines dependencies only for the top-level tasks.
 # Python-based sub-projects each include their own Pipfile.
+#
+# Because this top-level context only exists in development,
+# all dependencies are specified in [packages], none in [dev-packages].
 ################################################################################
 
 [[source]]
@@ -10,6 +13,7 @@ name = "pypi"
 
 [packages]
 pipenv = "*"
+pytest = "*"
 requests = "*"
 
 migraine_shared = {editable = true, path = "./migraine_shared"}
@@ -27,7 +31,6 @@ editable = true
 ################################################################################
 
 [dev-packages]
-pytest = "*"
 
 [requires]
 python_version = "3.9"

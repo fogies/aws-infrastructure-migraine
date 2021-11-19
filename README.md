@@ -20,18 +20,15 @@ Pending further development, a typical development environment then:
 - Runs a Celery task server locally, with hot reloading.  
 
 ```
-  depend.install.all               Install all dependencies.
-  dev.flask.serve                  Start Flask, listening on `localhost:4000`, including hot reloading.
-  dev.celery.serve                 TODO
+  invoke depend.install.all               # Install all dependencies.
+  invoke dev.flask.serve                  # Start Flask, listening on `localhost:4000`, including hot reloading.
+  invoke dev.celery.serve                 # TODO
 ```
 
-For now, test the database connection by creating, exercising, and deleting test accounts:
+Execute tests against development and production:
 
 ```
-  depend.install.all               Install all dependencies.
-  database.tests.create-accounts   Create test accounts.
-  database.tests.test-accounts     Exercise test accounts by creating and retrieving documents.
-  database.tests.delete-accounts   Delete test accounts.
+  invoke test.all                         # Execute all tests.
 ```
 
 ### Using Invoke
@@ -47,31 +44,29 @@ For now, test the database connection by creating, exercising, and deleting test
   ```
   Available tasks:
   
+    codebuild.flask.build            Build the Docker image.
     database.initialize              Initialize the database.
-    database.tests.create-accounts   Create test accounts.
-    database.tests.delete-accounts   Delete test accounts.
-    database.tests.test-accounts     Exercise test accounts by creating and retrieving documents.
     depend.install.all               Install all dependencies.
     depend.install.celery            Install celery dependencies.
     depend.install.flask             Install flask dependencies.
-    depend.install.tasks             Install tasks dependencies.
+    depend.install.root              Install root dependencies.
     depend.update.all                Update all dependencies.
     depend.update.celery             Update celery dependencies.
     depend.update.flask              Update flask dependencies.
-    depend.update.tasks              Update tasks dependencies.
+    depend.update.root               Update root dependencies.
     dev.flask.serve                  Start Flask, listening on `localhost:4000`, including hot reloading.
     helm.package                     Build packages from charts into staging.
     helm.release                     Release staged packages.
     helmfile.apply                   Apply helmfile/helmfile.yaml in the instance.
     prod.flask.serve                 Start Flask, listening on `0.0.0.0:4000`.
+    terraform.dns.apply              Issue a Terraform apply.
     terraform.ecr.apply              Issue a Terraform apply.
-    terraform.ecr.destroy            Issue a Terraform destroy.
     terraform.eip.apply              Issue a Terraform apply.
-    terraform.eip.destroy            Issue a Terraform destroy.
     terraform.instance.apply         Issue a Terraform apply.
-    terraform.instance.destroy       Issue a Terraform destroy.
-    terraform.instance.ip            Public IP of the instance.
-    terraform.instance.ssh           Open an SSH session.
+    test.all                         Execute all tests.
+    test.celery                      Execute celery tests.
+    test.flask                       Execute flask tests.
+    test.root                        Execute root tests.
   ```
 
 ## Installation of System Dependencies
@@ -179,7 +174,7 @@ On Windows:
 - When Pipenv is activated, the `cmd` environment will display `(Pipenv)`:
 
   ```
-  C:\devel\scope-web (Pipenv)>
+  C:\devel\ (Pipenv)>
   ```
 
 On a Mac:
