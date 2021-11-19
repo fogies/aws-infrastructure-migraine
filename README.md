@@ -20,18 +20,15 @@ Pending further development, a typical development environment then:
 - Runs a Celery task server locally, with hot reloading.  
 
 ```
-  depend.install.all               Install all dependencies.
-  dev.flask.serve                  Start Flask, listening on `localhost:4000`, including hot reloading.
-  dev.celery.serve                 TODO
+invoke depend.install.all   # Install all dependencies.
+invoke dev.flask.serve      # Start Flask, listening on `localhost:4000`, including hot reloading.
+invoke dev.celery.serve     # TODO
 ```
 
-For now, test the database connection by creating, exercising, and deleting test accounts:
+Execute tests against development and production:
 
 ```
-  depend.install.all               Install all dependencies.
-  database.tests.create-accounts   Create test accounts.
-  database.tests.test-accounts     Exercise test accounts by creating and retrieving documents.
-  database.tests.delete-accounts   Delete test accounts.
+invoke test.all   # Execute all tests.
 ```
 
 ### Using Invoke
@@ -47,31 +44,29 @@ For now, test the database connection by creating, exercising, and deleting test
   ```
   Available tasks:
   
-    database.initialize              Initialize the database.
-    database.tests.create-accounts   Create test accounts.
-    database.tests.delete-accounts   Delete test accounts.
-    database.tests.test-accounts     Exercise test accounts by creating and retrieving documents.
-    depend.install.all               Install all dependencies.
-    depend.install.celery            Install celery dependencies.
-    depend.install.flask             Install flask dependencies.
-    depend.install.tasks             Install tasks dependencies.
-    depend.update.all                Update all dependencies.
-    depend.update.celery             Update celery dependencies.
-    depend.update.flask              Update flask dependencies.
-    depend.update.tasks              Update tasks dependencies.
-    dev.flask.serve                  Start Flask, listening on `localhost:4000`, including hot reloading.
-    helm.package                     Build packages from charts into staging.
-    helm.release                     Release staged packages.
-    helmfile.apply                   Apply helmfile/helmfile.yaml in the instance.
-    prod.flask.serve                 Start Flask, listening on `0.0.0.0:4000`.
-    terraform.ecr.apply              Issue a Terraform apply.
-    terraform.ecr.destroy            Issue a Terraform destroy.
-    terraform.eip.apply              Issue a Terraform apply.
-    terraform.eip.destroy            Issue a Terraform destroy.
-    terraform.instance.apply         Issue a Terraform apply.
-    terraform.instance.destroy       Issue a Terraform destroy.
-    terraform.instance.ip            Public IP of the instance.
-    terraform.instance.ssh           Open an SSH session.
+    codebuild.flask.build      Build the Docker image.
+    database.initialize        Initialize the database.
+    depend.install.all         Install all dependencies.
+    depend.install.celery      Install celery dependencies.
+    depend.install.flask       Install flask dependencies.
+    depend.install.root        Install root dependencies.
+    depend.update.all          Update all dependencies.
+    depend.update.celery       Update celery dependencies.
+    depend.update.flask        Update flask dependencies.
+    depend.update.root         Update root dependencies.
+    dev.flask.serve            Start Flask, listening on `localhost:4000`, including hot reloading.
+    helm.package               Build packages from charts into staging.
+    helm.release               Release staged packages.
+    helmfile.apply             Apply helmfile/helmfile.yaml in the instance.
+    prod.flask.serve           Start Flask, listening on `0.0.0.0:4000`.
+    terraform.dns.apply        Issue a Terraform apply.
+    terraform.ecr.apply        Issue a Terraform apply.
+    terraform.eip.apply        Issue a Terraform apply.
+    terraform.instance.apply   Issue a Terraform apply.
+    test.all                   Execute all tests.
+    test.celery                Execute celery tests.
+    test.flask                 Execute flask tests.
+    test.root                  Execute root tests.
   ```
 
 ## Installation of System Dependencies
@@ -179,7 +174,7 @@ On Windows:
 - When Pipenv is activated, the `cmd` environment will display `(Pipenv)`:
 
   ```
-  C:\devel\scope-web (Pipenv)>
+  C:\devel\ (Pipenv)>
   ```
 
 On a Mac:
@@ -201,25 +196,15 @@ so the `pipenv` command is available locally (e.g., without a need to reference 
 - To ensure all dependencies are current (i.e., match all `Pipfile.lock`):
 
   ```
-  invoke depend.install.all
+  invoke depend.install.all   # Install all dependencies.
   ```
 
-- To install a new dependency, update versions of all dependencies, and update `Pipfile` and `Pipfile.lock`,
-  first change into the project directory and then issue use `pipenv install`:
+- To install a new dependency, or to update versions of all dependencies, 
+  first edit `Pipfile`, then update `Pipfile.lock`, then install the new dependencies.
 
   ```
-  cd <directory>
-  pipenv install <package>
-  cd ..
-  ```
-
-- To install a new development dependency, update versions of all dependencies, and update `Pipfile` and `Pipfile.lock`,
-  first change into the project directory and then issue use `pipenv install --dev`:
-
-  ```
-  cd <directory>
-  pipenv install --dev <package>
-  cd ..
+  invoke depend.install.all   # Install all dependencies.
+  invoke depend.update.all    # Update all dependencies.
   ```
 
 ## Providing Secrets
@@ -228,22 +213,12 @@ Runtime secrets are expected in the `secrets` directory.
 
 Secrets needed for AWS CLI access are in `secrets/aws`.
 
+- `secrets/aws/aws-infrastructure-migraine.config`
 - `secrets/aws/aws-infrastructure-migraine.credentials`
 
 Secrets needed for infrastructure configuration are in `secrets/configuration`.
 
-- `secrets/configuration/couchdb_config.yaml`
-
-  Secret for configuring CouchDB.
-
-Secrets needed by clients are in `secrets/client`.
-
-- `secrets/client/couchdb_client_config.yaml`
-
-  Secret for clients connecting to CouchDB.
-
-Secrets needed for testing are in `secrets/tests`.
-
-- `secrets/tests/accounts_config.yaml`
-
-  Secret for test accounts.
+- `secrets/configuration/dev_couchdb.yaml`
+- `secrets/configuration/dev_flask.yaml`
+- `secrets/configuration/prod_couchdb.yaml`
+- `secrets/configuration/prod_flask.yaml`

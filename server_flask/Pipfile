@@ -8,11 +8,13 @@ flask = "*"
 flask-cors = "*"
 flask-json = "*"
 jsonschema = "*"
-migraine_shared = {editable = true, path = "../migraine_shared"}
 requests = "*"
 waitress = "*"
 
+migraine_shared = {editable = true, path = "../migraine_shared"}
+
 [dev-packages]
+pytest = "*"
 
 [requires]
 python_version = "3.9"

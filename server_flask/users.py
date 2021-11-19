@@ -11,27 +11,24 @@ from typing import Dict
 from urllib.parse import urljoin
 
 
-import migraine_shared.config
-
-
 users_blueprint = Blueprint("users_blueprint", __name__)
 
 
-def _create_session(*, client_config: migraine_shared.config.CouchDBClientConfig) -> requests.Session:
+def _create_session(*, baseurl: str, user: str, password: str) -> requests.Session:
     """
     Obtain a session authenticated by the provided config.
     """
 
     # Authentication object for our request
     auth = requests.auth.HTTPBasicAuth(
-        username=client_config.user,
-        password=client_config.password,
+        username=user,
+        password=password,
     )
 
     # Open a session
     session = requests.Session()
     response = session.post(
-        urljoin(client_config.baseurl, "_session"),
+        urljoin(baseurl, "_session"),
         json={
             "name": auth.username,
             "password": auth.password,
@@ -157,12 +154,12 @@ def create_user_accounts():
     # Connect to the database
     #
 
-    admin_config = migraine_shared.config.CouchDBClientConfig(
-        baseurl=current_app.config["DB_BASEURL"],
-        user=current_app.config["DB_ADMIN_USER"],
-        password=current_app.config["DB_ADMIN_PASSWORD"],
+    baseurl = current_app.config["DATABASE_BASEURL"]
+    admin_session = _create_session(
+        baseurl=baseurl,
+        user=current_app.config["DATABASE_ADMIN_USER"],
+        password=current_app.config["DATABASE_ADMIN_PASSWORD"],
     )
-    admin_session = _create_session(client_config=admin_config)
 
     #
     # Validate the state of the database
@@ -173,7 +170,7 @@ def create_user_accounts():
 
     # Ensure the user does not already exist
     response = admin_session.get(
-        urljoin(admin_config.baseurl, "_users/{}".format(user_doc_id)),
+        urljoin(baseurl, "_users/{}".format(user_doc_id)),
     )
     if response.ok:
         # Get succeeded, so the user already exists
@@ -182,7 +179,7 @@ def create_user_accounts():
     # Ensure the database does not already exist
     database = _database_for_user(user=requested_user)
     response = admin_session.head(
-        urljoin(admin_config.baseurl, database),
+        urljoin(baseurl, database),
     )
     if response.ok:
         # Get succeeded, so the database already exists
@@ -197,7 +194,7 @@ def create_user_accounts():
 
     # Create the user
     response = admin_session.put(
-        urljoin(admin_config.baseurl, "_users/{}".format(user_doc_id)),
+        urljoin(baseurl, "_users/{}".format(user_doc_id)),
         json={
             "type": "user",
             "name": requested_user,
@@ -209,13 +206,13 @@ def create_user_accounts():
 
     # Create the database.
     response = admin_session.put(
-        urljoin(admin_config.baseurl, database),
+        urljoin(baseurl, database),
     )
     response.raise_for_status()
 
     # Ensure the database has the desired _security document.
     response = admin_session.put(
-        urljoin(admin_config.baseurl, "{}/_security".format(database)),
+        urljoin(baseurl, "{}/_security".format(database)),
         json={
             "members": {
                 "names": [requested_user],
@@ -276,12 +273,12 @@ def get_user_profile():
     # Connect to the database
     #
 
-    admin_config = migraine_shared.config.CouchDBClientConfig(
-        baseurl=current_app.config["DB_BASEURL"],
-        user=current_app.config["DB_ADMIN_USER"],
-        password=current_app.config["DB_ADMIN_PASSWORD"],
+    baseurl = current_app.config["DATABASE_BASEURL"]
+    admin_session = _create_session(
+        baseurl=baseurl,
+        user=current_app.config["DATABASE_ADMIN_USER"],
+        password=current_app.config["DATABASE_ADMIN_PASSWORD"],
     )
-    admin_session = _create_session(client_config=admin_config)
 
     #
     # Validate the state of the database
@@ -292,7 +289,7 @@ def get_user_profile():
 
     # Confirm the user exists
     response = admin_session.get(
-        urljoin(admin_config.baseurl, "_users/{}".format(user_doc_id)),
+        urljoin(baseurl, "_users/{}".format(user_doc_id)),
     )
     if not response.ok:
         abort(404, jsonify(message="User not found."))  # 404 Not Found
@@ -300,7 +297,7 @@ def get_user_profile():
     # User exists, confirm database exists
     database = _database_for_user(user=requested_user)
     response = admin_session.head(
-        urljoin(admin_config.baseurl, database),
+        urljoin(baseurl, database),
     )
     response.raise_for_status()
 
@@ -340,17 +337,17 @@ def get_all_users():
     # Connect to the database
     #
 
-    admin_config = migraine_shared.config.CouchDBClientConfig(
-        baseurl=current_app.config["DB_BASEURL"],
-        user=current_app.config["DB_ADMIN_USER"],
-        password=current_app.config["DB_ADMIN_PASSWORD"],
+    baseurl = current_app.config["DATABASE_BASEURL"]
+    admin_session = _create_session(
+        baseurl=baseurl,
+        user=current_app.config["DATABASE_ADMIN_USER"],
+        password=current_app.config["DATABASE_ADMIN_PASSWORD"],
     )
-    admin_session = _create_session(client_config=admin_config)
 
     # Get all users.
     # https://docs.couchdb.org/en/stable/intro/security.html#authentication-database
     response = admin_session.get(
-        urljoin(admin_config.baseurl, "_users/{}".format("_all_docs")),
+        urljoin(baseurl, "_users/{}".format("_all_docs")),
     )
     response.raise_for_status()
 
