@@ -199,22 +199,12 @@ so the `pipenv` command is available locally (e.g., without a need to reference 
   invoke depend.install.all
   ```
 
-- To install a new dependency, update versions of all dependencies, and update `Pipfile` and `Pipfile.lock`,
-  first change into the project directory and then issue use `pipenv install`:
+- To install a new dependency, or to update versions of all dependencies, 
+  first edit `Pipfile`, then update `Pipfile.lock`, then install the new dependencies.
 
   ```
-  cd <directory>
-  pipenv install <package>
-  cd ..
-  ```
-
-- To install a new development dependency, update versions of all dependencies, and update `Pipfile` and `Pipfile.lock`,
-  first change into the project directory and then issue use `pipenv install --dev`:
-
-  ```
-  cd <directory>
-  pipenv install --dev <package>
-  cd ..
+  invoke depend.update.all
+  invoke depend.install.all
   ```
 
 ## Providing Secrets
