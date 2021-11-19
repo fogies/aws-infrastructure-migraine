@@ -20,15 +20,15 @@ Pending further development, a typical development environment then:
 - Runs a Celery task server locally, with hot reloading.  
 
 ```
-  invoke depend.install.all               # Install all dependencies.
-  invoke dev.flask.serve                  # Start Flask, listening on `localhost:4000`, including hot reloading.
-  invoke dev.celery.serve                 # TODO
+invoke depend.install.all   # Install all dependencies.
+invoke dev.flask.serve      # Start Flask, listening on `localhost:4000`, including hot reloading.
+invoke dev.celery.serve     # TODO
 ```
 
 Execute tests against development and production:
 
 ```
-  invoke test.all                         # Execute all tests.
+invoke test.all   # Execute all tests.
 ```
 
 ### Using Invoke
@@ -44,29 +44,29 @@ Execute tests against development and production:
   ```
   Available tasks:
   
-    codebuild.flask.build            Build the Docker image.
-    database.initialize              Initialize the database.
-    depend.install.all               Install all dependencies.
-    depend.install.celery            Install celery dependencies.
-    depend.install.flask             Install flask dependencies.
-    depend.install.root              Install root dependencies.
-    depend.update.all                Update all dependencies.
-    depend.update.celery             Update celery dependencies.
-    depend.update.flask              Update flask dependencies.
-    depend.update.root               Update root dependencies.
-    dev.flask.serve                  Start Flask, listening on `localhost:4000`, including hot reloading.
-    helm.package                     Build packages from charts into staging.
-    helm.release                     Release staged packages.
-    helmfile.apply                   Apply helmfile/helmfile.yaml in the instance.
-    prod.flask.serve                 Start Flask, listening on `0.0.0.0:4000`.
-    terraform.dns.apply              Issue a Terraform apply.
-    terraform.ecr.apply              Issue a Terraform apply.
-    terraform.eip.apply              Issue a Terraform apply.
-    terraform.instance.apply         Issue a Terraform apply.
-    test.all                         Execute all tests.
-    test.celery                      Execute celery tests.
-    test.flask                       Execute flask tests.
-    test.root                        Execute root tests.
+    codebuild.flask.build      Build the Docker image.
+    database.initialize        Initialize the database.
+    depend.install.all         Install all dependencies.
+    depend.install.celery      Install celery dependencies.
+    depend.install.flask       Install flask dependencies.
+    depend.install.root        Install root dependencies.
+    depend.update.all          Update all dependencies.
+    depend.update.celery       Update celery dependencies.
+    depend.update.flask        Update flask dependencies.
+    depend.update.root         Update root dependencies.
+    dev.flask.serve            Start Flask, listening on `localhost:4000`, including hot reloading.
+    helm.package               Build packages from charts into staging.
+    helm.release               Release staged packages.
+    helmfile.apply             Apply helmfile/helmfile.yaml in the instance.
+    prod.flask.serve           Start Flask, listening on `0.0.0.0:4000`.
+    terraform.dns.apply        Issue a Terraform apply.
+    terraform.ecr.apply        Issue a Terraform apply.
+    terraform.eip.apply        Issue a Terraform apply.
+    terraform.instance.apply   Issue a Terraform apply.
+    test.all                   Execute all tests.
+    test.celery                Execute celery tests.
+    test.flask                 Execute flask tests.
+    test.root                  Execute root tests.
   ```
 
 ## Installation of System Dependencies
@@ -196,15 +196,15 @@ so the `pipenv` command is available locally (e.g., without a need to reference 
 - To ensure all dependencies are current (i.e., match all `Pipfile.lock`):
 
   ```
-  invoke depend.install.all
+  invoke depend.install.all   # Install all dependencies.
   ```
 
 - To install a new dependency, or to update versions of all dependencies, 
   first edit `Pipfile`, then update `Pipfile.lock`, then install the new dependencies.
 
   ```
-  invoke depend.update.all
-  invoke depend.install.all
+  invoke depend.install.all   # Install all dependencies.
+  invoke depend.update.all    # Update all dependencies.
   ```
 
 ## Providing Secrets
