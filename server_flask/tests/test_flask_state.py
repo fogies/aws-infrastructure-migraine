@@ -3,7 +3,10 @@ import requests.auth
 from urllib.parse import urljoin
 
 import migraine_shared.config
-from tests.test_flask_config import flask_config
+
+# Execute tests against both development and production.
+from tests.common.test_config_all import flask_config
+assert flask_config
 
 
 def test_flask_reachable(flask_config: migraine_shared.config.FlaskConfig):
