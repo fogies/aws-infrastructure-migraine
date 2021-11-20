@@ -15,7 +15,7 @@ def couchdb_config(config_path: Path) -> migraine_shared.config.CouchDBConfig:
     return migraine_shared.config.CouchDBConfig.load(couchdb_config_path=config_path)
 
 
-def session_admin(couchdb_config: migraine_shared.config.CouchDBConfig) -> requests.Session:
+def couchdb_session_admin(couchdb_config: migraine_shared.config.CouchDBConfig) -> requests.Session:
     """
     Helper that provides session authenticated as an administrator.
     """
