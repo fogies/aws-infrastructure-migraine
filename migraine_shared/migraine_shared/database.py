@@ -4,7 +4,7 @@ import requests
 from urllib.parse import urljoin
 
 def create_account(
-    session_admin: requests.Session,
+    couchdb_session_admin: requests.Session,
     couchdb_baseurl: str,
     account: str,
     password: str,
@@ -37,7 +37,7 @@ def create_account(
     user_database = database_for_user(user=account)
 
     # Ensure the user does not already exist.
-    response = session_admin.get(
+    response = couchdb_session_admin.get(
         urljoin(couchdb_baseurl, "_users/{}".format(user_doc_id)),
     )
     if response.ok:
@@ -47,7 +47,7 @@ def create_account(
         return response
 
     # Ensure the database does not already exist.
-    response = session_admin.head(
+    response = couchdb_session_admin.head(
         urljoin(couchdb_baseurl, user_database)
     )
     if response.ok:
@@ -57,7 +57,7 @@ def create_account(
         return response
 
     # Create the requested user.
-    response = session_admin.put(
+    response = couchdb_session_admin.put(
         urljoin(couchdb_baseurl, "_users/{}".format(user_doc_id)),
         json=user_doc,
     )
@@ -65,14 +65,14 @@ def create_account(
         return response
 
     # Create the requested database.
-    response = session_admin.put(
+    response = couchdb_session_admin.put(
         urljoin(couchdb_baseurl, user_database),
     )
     if not response.ok:
         return response
 
     # Apply a _security document granting the user access to the database.
-    response = session_admin.put(
+    response = couchdb_session_admin.put(
         urljoin(couchdb_baseurl, "{}/_security".format(user_database)),
         json={
             "members": {
@@ -99,7 +99,7 @@ def create_account(
 
 
 def delete_account(
-    session_admin: requests.Session,
+    couchdb_session_admin: requests.Session,
     couchdb_baseurl: str,
     account: str,
 ) -> requests.Response:
@@ -119,7 +119,7 @@ def delete_account(
     account_existed = False
 
     # Check if the user exists.
-    response = session_admin.get(
+    response = couchdb_session_admin.get(
         urljoin(couchdb_baseurl, "_users/{}".format(user_doc_id)),
     )
     if response.ok:
@@ -128,7 +128,7 @@ def delete_account(
 
         # The user exists, issue a delete including the "_rev" we obtained.
         existing_user_doc = response.json()
-        response = session_admin.delete(
+        response = couchdb_session_admin.delete(
             urljoin(couchdb_baseurl, "_users/{}".format(user_doc_id)),
             headers={"If-Match": existing_user_doc["_rev"]},
         )
@@ -137,7 +137,7 @@ def delete_account(
             return response
 
     # Check if the database exists.
-    response = session_admin.get(
+    response = couchdb_session_admin.get(
         urljoin(couchdb_baseurl, user_database),
     )
     if response.ok:
@@ -145,7 +145,7 @@ def delete_account(
         account_existed = True
 
         # The database exists, issue a delete.
-        response = session_admin.delete(
+        response = couchdb_session_admin.delete(
             urljoin(couchdb_baseurl, user_database)
         )
         if not response.ok:
