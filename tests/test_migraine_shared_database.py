@@ -14,54 +14,11 @@ from urllib.parse import urljoin
 import migraine_shared.config
 import migraine_shared.database
 
-DEV_COUCHDB_CONFIG_PATH = "./secrets/configuration/dev_couchdb.yaml"
-
-
-@pytest.fixture
-def couchdb_config() -> migraine_shared.config.CouchDBConfig:
-    """
-    Fixture providing database configuration.
-    """
-
-    return migraine_shared.config.CouchDBConfig.load(DEV_COUCHDB_CONFIG_PATH)
-
-
-@pytest.fixture
-def session_admin(couchdb_config: migraine_shared.config.CouchDBConfig) -> requests.Session:
-    """
-    Fixture providing session that is authenticated as an administrator.
-    """
-
-    # Obtain the session
-    session_admin = requests.Session()
-
-    # Authenticate the session
-    response = session_admin.post(
-        urljoin(couchdb_config.baseurl, "_session"),
-        json={
-            "name": couchdb_config.admin_user,
-            "password": couchdb_config.admin_password,
-        },
-    )
-    assert response.ok
-
-    return session_admin
-
-
-def test_session_admin_authenticated(
-    session_admin: requests.Session,
-    couchdb_config: migraine_shared.config.CouchDBConfig,
-):
-    """
-    Test session_admin is actually authenticated as an administrator.
-    """
-
-    # Only an administrator can access the _users database
-    response = session_admin.get(
-        urljoin(couchdb_config.baseurl, "_users"),
-    )
-    assert response.ok
-
+# Execute tests against only development.
+from tests.config.test_config_dev import couchdb_config
+from tests.config.test_config_dev import session_admin
+assert couchdb_config
+assert session_admin
 
 AccountTuple = collections.namedtuple('AccountTuple', ['user', 'password'])
 
@@ -85,8 +42,8 @@ def account_secondary():
 
 
 def test_admin_account_creation_and_deletion(
-    session_admin: requests.Session,
     couchdb_config: migraine_shared.config.CouchDBConfig,
+    session_admin: requests.Session,
     account_primary: AccountTuple
 ):
     """
@@ -160,8 +117,8 @@ def test_admin_account_creation_and_deletion(
 
 
 def _session_account(
-    session_admin: requests.Session,
     couchdb_config: migraine_shared.config.CouchDBConfig,
+    session_admin: requests.Session,
     account_tuple: AccountTuple,
 ) -> requests.Session:
     """
@@ -204,8 +161,8 @@ def _session_account(
 
 @pytest.fixture
 def session_account_primary(
-    session_admin: requests.Session,
     couchdb_config: migraine_shared.config.CouchDBConfig,
+    session_admin: requests.Session,
     account_primary: AccountTuple,
 ) -> requests.Session:
     """
@@ -221,8 +178,8 @@ def session_account_primary(
 
 @pytest.fixture
 def session_account_secondary(
-    session_admin: requests.Session,
     couchdb_config: migraine_shared.config.CouchDBConfig,
+    session_admin: requests.Session,
     account_secondary: AccountTuple,
 ) -> requests.Session:
     """
@@ -237,8 +194,8 @@ def session_account_secondary(
 
 
 def test_account_document_access(
-    session_account_primary: requests.Session,
     couchdb_config: migraine_shared.config.CouchDBConfig,
+    session_account_primary: requests.Session,
     account_primary: AccountTuple,
 ):
     """
@@ -285,8 +242,8 @@ def test_account_document_access(
 
 
 def test_account_document_secure(
-    session_account_primary: requests.Session,
     couchdb_config: migraine_shared.config.CouchDBConfig,
+    session_account_primary: requests.Session,
     account_primary: AccountTuple,
     session_account_secondary: requests.Session,
 ):

@@ -2,31 +2,14 @@
 Tests for confirming existence and expected state of our databases.
 """
 
-import pytest
 import requests
 import requests.auth
 from urllib.parse import urljoin
 
-import migraine_shared.config
 
-DEV_COUCHDB_CONFIG_PATH = "./secrets/configuration/dev_couchdb.yaml"
-PROD_COUCHDB_CONFIG_PATH = "./secrets/configuration/prod_couchdb.yaml"
-
-
-@pytest.fixture(
-    params=[
-        DEV_COUCHDB_CONFIG_PATH,
-        PROD_COUCHDB_CONFIG_PATH,
-    ]
-)
-def couchdb_config(request) -> migraine_shared.config.CouchDBConfig:
-    """
-    Fixture providing CouchDB configurations.
-    """
-
-    config_path = request.param
-
-    return migraine_shared.config.CouchDBConfig.load(config_path)
+# Execute tests against both development and production.
+from tests.config.test_config_all import couchdb_config
+assert couchdb_config
 
 
 def test_database_reachable(couchdb_config):

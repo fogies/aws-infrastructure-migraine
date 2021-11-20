@@ -21,7 +21,7 @@ def initialize(context):
     # Obtain our connection information and admin credentials
     #
     couchdb_client_config = CouchDBConfig.load(
-        couchdb_client_config_path=COUCHDB_CLIENT_CONFIG_PATH
+        couchdb_config_path=COUCHDB_CLIENT_CONFIG_PATH
     )
     admin_auth = requests.auth.HTTPBasicAuth(
         username=couchdb_client_config.admin_user,
