@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
+from flask_json import as_json
 from flask_json import FlaskJSON
 import logging
 import os
@@ -37,6 +38,13 @@ def create_app():
     # Register blue prints.
     # TODO - maybe move blue prints to their own folder if functions explode.
     app.register_blueprint(users_blueprint, url_prefix='/users')
+
+    # Basic status endpoint.
+    # TODO - move this into a blueprint
+    @app.route("/")
+    @as_json
+    def auth():
+        return {"status": "ok"}
 
     return app
 

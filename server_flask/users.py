@@ -1,15 +1,14 @@
 from flask import abort, Blueprint, current_app
 from flask import jsonify, request
 from flask_json import as_json
-import hashlib
 import jsonschema
-import re
 import requests
 import requests.auth
 import requests.exceptions
 from typing import Dict
 from urllib.parse import urljoin
 
+import migraine_shared.database
 
 users_blueprint = Blueprint("users_blueprint", __name__)
 
@@ -37,20 +36,6 @@ def _create_session(*, baseurl: str, user: str, password: str) -> requests.Sessi
     response.raise_for_status()
 
     return session
-
-
-def _database_for_user(*, user: str):
-    """
-    Obtain the name of the database for a specified user.
-
-    CouchDB requirement of database names:
-    - Only lowercase characters (a-z), digits (0-9), and any of the characters _$()+-/ are allowed.
-    - Must begin with a letter.
-
-    Database names will therefore be 'user_' followed by hex encoding of an MD5 hash of the user name.
-    """
-
-    return "user_{}".format(hashlib.md5(user.encode("utf-8")).digest().hex())
 
 
 def _validate_request_json_schema(*, instance: Dict, schema: Dict):
@@ -81,32 +66,13 @@ def _validate_secret_key(*, secret_key: str):
     Raise 403 on failure.
     """
     # Require clients provide a secret
-    if secret_key != current_app.config["CLIENT_SECRET_KEY"]:
+    if secret_key != current_app.config["SECRET_KEY"]:
         abort(403, jsonify(message="Invalid secret key."))  # 403 Forbidden
-
-
-def _validate_user(*, user: str) -> bool:
-    """
-    Determine whether a provided user name is allowable.
-
-    At least characters :+ are not allowed in CouchDB user names, possibly others.
-    Instead of requiring encoding of user names, require that names are alphanumeric with ._ allowed.
-    """
-
-    # Forbid user that start with 'user_', as that conflicts with our database encoding
-    if user.startswith("user_"):
-        return False
-
-    # Limit to 32 characters, just to avoid any issues
-    if len(user) > 32:
-        return False
-
-    return re.match(pattern="^[a-zA-Z0-9_.]+$", string=user) is not None
 
 
 @users_blueprint.route("/create_account", methods=["POST"])
 @as_json
-def create_user_accounts():
+def create_user_account():
     """
     Create user account.
 
@@ -146,88 +112,33 @@ def create_user_accounts():
     requested_user = request.json["user_name"]
     requested_password = request.json["user_password"]
 
-    # Ensure the user_name is valid
-    if not _validate_user(user=requested_user):
-        abort(403, jsonify(message="User not allowed."))  # 403 Forbidden
-
     #
     # Connect to the database
     #
 
-    baseurl = current_app.config["DATABASE_BASEURL"]
-    admin_session = _create_session(
-        baseurl=baseurl,
+    couchdb_baseurl = current_app.config["DATABASE_BASEURL"]
+    couchdb_session_admin = _create_session(
+        baseurl=couchdb_baseurl,
         user=current_app.config["DATABASE_ADMIN_USER"],
         password=current_app.config["DATABASE_ADMIN_PASSWORD"],
     )
 
     #
-    # Validate the state of the database
-    #
-
-    # ID of the user document
-    user_doc_id = "org.couchdb.user:{}".format(requested_user)
-
-    # Ensure the user does not already exist
-    response = admin_session.get(
-        urljoin(baseurl, "_users/{}".format(user_doc_id)),
-    )
-    if response.ok:
-        # Get succeeded, so the user already exists
-        abort(409, jsonify(message="User already exists."))  # 409 Conflict
-
-    # Ensure the database does not already exist
-    database = _database_for_user(user=requested_user)
-    response = admin_session.head(
-        urljoin(baseurl, database),
-    )
-    if response.ok:
-        # Get succeeded, so the database already exists
-        abort(409, jsonify(message="Database already exists."))  # 409 Conflict
-
-    #
     # Create the user and their database
     #
 
-    # Because there are no transactions, it is possible to reach this point in a race condition.
-    # In that case, creation of the user document is atomic, so one side of the race will fail.
-
-    # Create the user
-    response = admin_session.put(
-        urljoin(baseurl, "_users/{}".format(user_doc_id)),
-        json={
-            "type": "user",
-            "name": requested_user,
-            "password": requested_password,
-            "roles": [],
-        },
+    response = migraine_shared.database.create_account(
+        couchdb_session_admin=couchdb_session_admin,
+        couchdb_baseurl=couchdb_baseurl,
+        account=requested_user,
+        password=requested_password,
     )
-    response.raise_for_status()
-
-    # Create the database.
-    response = admin_session.put(
-        urljoin(baseurl, database),
-    )
-    response.raise_for_status()
-
-    # Ensure the database has the desired _security document.
-    response = admin_session.put(
-        urljoin(baseurl, "{}/_security".format(database)),
-        json={
-            "members": {
-                "names": [requested_user],
-                "roles": ["_admin"],
-            },
-            "admins": {
-                "roles": ["_admin"],
-            },
-        },
-    )
-    response.raise_for_status()
+    if not response.ok:
+        return response
 
     return {
         "user_name": requested_user,
-        "database": database,
+        "database": migraine_shared.database.database_for_user(user=requested_user),
     }
 
 
@@ -273,9 +184,9 @@ def get_user_profile():
     # Connect to the database
     #
 
-    baseurl = current_app.config["DATABASE_BASEURL"]
-    admin_session = _create_session(
-        baseurl=baseurl,
+    couchdb_baseurl = current_app.config["DATABASE_BASEURL"]
+    couchdb_session_admin = _create_session(
+        baseurl=couchdb_baseurl,
         user=current_app.config["DATABASE_ADMIN_USER"],
         password=current_app.config["DATABASE_ADMIN_PASSWORD"],
     )
@@ -284,25 +195,26 @@ def get_user_profile():
     # Validate the state of the database
     #
 
-    # ID of the user document and its content
+    # ID of the user document and corresponding database
     user_doc_id = "org.couchdb.user:{}".format(requested_user)
+    user_database = migraine_shared.database.database_for_user(user=requested_user)
 
     # Confirm the user exists
-    response = admin_session.get(
-        urljoin(baseurl, "_users/{}".format(user_doc_id)),
+    response = couchdb_session_admin.get(
+        urljoin(couchdb_baseurl, "_users/{}".format(user_doc_id)),
     )
     if not response.ok:
         abort(404, jsonify(message="User not found."))  # 404 Not Found
 
     # User exists, confirm database exists
-    database = _database_for_user(user=requested_user)
-    response = admin_session.head(
-        urljoin(baseurl, database),
+    response = couchdb_session_admin.head(
+        urljoin(couchdb_baseurl, user_database),
     )
-    response.raise_for_status()
+    if not response.ok:
+        abort(404, jsonify(message="Database not found."))  # 404 Not Found
 
     # Return the profile
-    return {"user_name": requested_user, "database": database}
+    return {"user_name": requested_user, "database": user_database}
 
 
 @users_blueprint.route("/get_all_users", methods=["POST"])

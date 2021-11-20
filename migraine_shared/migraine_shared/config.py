@@ -30,10 +30,10 @@ class CouchDBConfig:
         self._uuid = uuid
 
     @staticmethod
-    def load(couchdb_client_config_path: Union[Path, str]):
-        couchdb_client_config_path = Path(couchdb_client_config_path)
+    def load(couchdb_config_path: Union[Path, str]):
+        couchdb_config_path = Path(couchdb_config_path)
 
-        with open(couchdb_client_config_path) as config_file:
+        with open(couchdb_config_path) as config_file:
             yaml = ruamel.yaml.YAML(typ="safe", pure=True)
             yaml_config = yaml.load(config_file)
 
@@ -76,7 +76,7 @@ class FlaskConfig:
     Parse configuration for a Flask instance.
     """
 
-    _base_url: str
+    _baseurl: str
     _secret_key: str
 
     _database_baseurl: str
@@ -93,7 +93,7 @@ class FlaskConfig:
         database_admin_user: str,
         database_admin_password: str,
     ):
-        self._base_url = baseurl
+        self._baseurl = baseurl
         self._secret_key = secret_key
         self._database_baseurl = database_baseurl
         self._database_admin_user = database_admin_user
