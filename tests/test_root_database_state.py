@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 
 
 # Execute tests against both development and production.
-from tests.config.test_config_all import couchdb_config
+from tests.common.test_config_all import couchdb_config
 assert couchdb_config
 
 

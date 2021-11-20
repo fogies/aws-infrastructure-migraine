@@ -15,10 +15,10 @@ import migraine_shared.config
 import migraine_shared.database
 
 # Execute tests against only development.
-from tests.config.test_config_dev import couchdb_config
-from tests.config.test_config_dev import session_admin
+from tests.common.test_config_dev import couchdb_config
+from tests.common.test_config_dev import couchdb_session_admin
 assert couchdb_config
-assert session_admin
+assert couchdb_session_admin
 
 AccountTuple = collections.namedtuple('AccountTuple', ['user', 'password'])
 
@@ -43,7 +43,7 @@ def account_secondary():
 
 def test_admin_account_creation_and_deletion(
     couchdb_config: migraine_shared.config.CouchDBConfig,
-    session_admin: requests.Session,
+    couchdb_session_admin: requests.Session,
     account_primary: AccountTuple
 ):
     """
@@ -56,27 +56,27 @@ def test_admin_account_creation_and_deletion(
 
     # Ensure account does not exist, in case of previous test failure.
     response = migraine_shared.database.delete_account(
-        session_admin=session_admin,
+        couchdb_session_admin=couchdb_session_admin,
         couchdb_baseurl=couchdb_config.baseurl,
         account=account_primary.user,
     )
     assert response.status_code in [204, 404]  # OK No Content, Not Found
 
     # Ensure the user does not exist.
-    response = session_admin.get(
+    response = couchdb_session_admin.get(
         urljoin(couchdb_config.baseurl, "_users/{}".format(user_doc_id)),
     )
     assert response.status_code == 404  # Not found
 
     # Ensure the database does not exist.
-    response = session_admin.get(
+    response = couchdb_session_admin.get(
         urljoin(couchdb_config.baseurl, user_database)
     )
     assert response.status_code == 404  # Not found
 
     # Perform account creation.
     response = migraine_shared.database.create_account(
-        session_admin=session_admin,
+        couchdb_session_admin=couchdb_session_admin,
         couchdb_baseurl=couchdb_config.baseurl,
         account=account_primary.user,
         password=account_primary.password,
@@ -84,33 +84,33 @@ def test_admin_account_creation_and_deletion(
     assert response.status_code == 200  # OK
 
     # Confirm the user now exists.
-    response = session_admin.get(
+    response = couchdb_session_admin.get(
         urljoin(couchdb_config.baseurl, "_users/{}".format(user_doc_id)),
     )
     assert response.ok
 
     # Confirm the database now exists.
-    response = session_admin.get(
+    response = couchdb_session_admin.get(
         urljoin(couchdb_config.baseurl, user_database)
     )
     assert response.ok
 
     # Perform account deletion.
     response = migraine_shared.database.delete_account(
-        session_admin=session_admin,
+        couchdb_session_admin=couchdb_session_admin,
         couchdb_baseurl=couchdb_config.baseurl,
         account=account_primary.user,
     )
     assert response.status_code == 204  # OK No Content
 
     # Ensure the user does not exist.
-    response = session_admin.get(
+    response = couchdb_session_admin.get(
         urljoin(couchdb_config.baseurl, "_users/{}".format(user_doc_id)),
     )
     assert response.status_code == 404  # Not found
 
     # Ensure the database does not exist.
-    response = session_admin.get(
+    response = couchdb_session_admin.get(
         urljoin(couchdb_config.baseurl, user_database)
     )
     assert response.status_code == 404  # Not found
@@ -118,7 +118,7 @@ def test_admin_account_creation_and_deletion(
 
 def _session_account(
     couchdb_config: migraine_shared.config.CouchDBConfig,
-    session_admin: requests.Session,
+    couchdb_session_admin: requests.Session,
     account_tuple: AccountTuple,
 ) -> requests.Session:
     """
@@ -127,7 +127,7 @@ def _session_account(
 
     # Create the account
     response = migraine_shared.database.create_account(
-        session_admin=session_admin,
+        couchdb_session_admin=couchdb_session_admin,
         couchdb_baseurl=couchdb_config.baseurl,
         account=account_tuple.user,
         password=account_tuple.password,
@@ -152,7 +152,7 @@ def _session_account(
 
     # Delete the account
     response = migraine_shared.database.delete_account(
-        session_admin=session_admin,
+        couchdb_session_admin=couchdb_session_admin,
         couchdb_baseurl=couchdb_config.baseurl,
         account=account_tuple.user,
     )
@@ -162,7 +162,7 @@ def _session_account(
 @pytest.fixture
 def session_account_primary(
     couchdb_config: migraine_shared.config.CouchDBConfig,
-    session_admin: requests.Session,
+    couchdb_session_admin: requests.Session,
     account_primary: AccountTuple,
 ) -> requests.Session:
     """
@@ -170,7 +170,7 @@ def session_account_primary(
     """
 
     yield from _session_account(
-        session_admin=session_admin,
+        couchdb_session_admin=couchdb_session_admin,
         couchdb_config=couchdb_config,
         account_tuple=account_primary,
     )
@@ -179,7 +179,7 @@ def session_account_primary(
 @pytest.fixture
 def session_account_secondary(
     couchdb_config: migraine_shared.config.CouchDBConfig,
-    session_admin: requests.Session,
+    couchdb_session_admin: requests.Session,
     account_secondary: AccountTuple,
 ) -> requests.Session:
     """
@@ -187,7 +187,7 @@ def session_account_secondary(
     """
 
     yield from _session_account(
-        session_admin=session_admin,
+        couchdb_session_admin=couchdb_session_admin,
         couchdb_config=couchdb_config,
         account_tuple=account_secondary,
     )
