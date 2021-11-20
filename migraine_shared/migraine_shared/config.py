@@ -30,10 +30,10 @@ class CouchDBConfig:
         self._uuid = uuid
 
     @staticmethod
-    def load(couchdb_client_config_path: Union[Path, str]):
-        couchdb_client_config_path = Path(couchdb_client_config_path)
+    def load(couchdb_config_path: Union[Path, str]):
+        couchdb_config_path = Path(couchdb_config_path)
 
-        with open(couchdb_client_config_path) as config_file:
+        with open(couchdb_config_path) as config_file:
             yaml = ruamel.yaml.YAML(typ="safe", pure=True)
             yaml_config = yaml.load(config_file)
 
