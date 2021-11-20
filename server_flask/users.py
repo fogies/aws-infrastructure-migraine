@@ -74,7 +74,7 @@ def _validate_secret_key(*, secret_key: str):
 
 @users_blueprint.route("/create_account", methods=["POST"])
 @as_json
-def create_user_accounts():
+def create_user_account():
     """
     Create user account.
 
