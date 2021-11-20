@@ -23,7 +23,7 @@ AccountTuple = collections.namedtuple('AccountTuple', ['user', 'password'])
 
 @pytest.fixture
 def sample_account() -> AccountTuple:
-    return AccountTuple('flask_user', secrets.token_urlsafe())
+    return AccountTuple('test_flask_user', secrets.token_urlsafe())
 
 
 @pytest.fixture()
@@ -61,11 +61,12 @@ def sample_account_create(couchdb_config, couchdb_session_admin, sample_account,
     yield
 
 
-@pytest.mark.xfail
-def test_flask_get_all_users(flask_config: migraine_shared.config.FlaskConfig):
+def test_flask_get_all_users(flask_config: migraine_shared.config.FlaskConfig, sample_account, sample_account_create):
     """
     Test retrieval of all current users.
     """
+
+    assert sample_account_create
 
     session = requests.session()
     response = session.post(
@@ -76,4 +77,6 @@ def test_flask_get_all_users(flask_config: migraine_shared.config.FlaskConfig):
     )
     assert response.ok
 
-    assert False
+    # Response json is a list of users.
+    # Ensure our sample is in that list.
+    assert sample_account.user in response.json()

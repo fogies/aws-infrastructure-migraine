@@ -10,6 +10,7 @@ import requests.exceptions
 from typing import Dict
 from urllib.parse import urljoin
 
+import migraine_shared.database
 
 users_blueprint = Blueprint("users_blueprint", __name__)
 
@@ -37,20 +38,6 @@ def _create_session(*, baseurl: str, user: str, password: str) -> requests.Sessi
     response.raise_for_status()
 
     return session
-
-
-def _database_for_user(*, user: str):
-    """
-    Obtain the name of the database for a specified user.
-
-    CouchDB requirement of database names:
-    - Only lowercase characters (a-z), digits (0-9), and any of the characters _$()+-/ are allowed.
-    - Must begin with a letter.
-
-    Database names will therefore be 'user_' followed by hex encoding of an MD5 hash of the user name.
-    """
-
-    return "user_{}".format(hashlib.md5(user.encode("utf-8")).digest().hex())
 
 
 def _validate_request_json_schema(*, instance: Dict, schema: Dict):
@@ -81,27 +68,8 @@ def _validate_secret_key(*, secret_key: str):
     Raise 403 on failure.
     """
     # Require clients provide a secret
-    if secret_key != current_app.config["CLIENT_SECRET_KEY"]:
+    if secret_key != current_app.config["SECRET_KEY"]:
         abort(403, jsonify(message="Invalid secret key."))  # 403 Forbidden
-
-
-def _validate_user(*, user: str) -> bool:
-    """
-    Determine whether a provided user name is allowable.
-
-    At least characters :+ are not allowed in CouchDB user names, possibly others.
-    Instead of requiring encoding of user names, require that names are alphanumeric with ._ allowed.
-    """
-
-    # Forbid user that start with 'user_', as that conflicts with our database encoding
-    if user.startswith("user_"):
-        return False
-
-    # Limit to 32 characters, just to avoid any issues
-    if len(user) > 32:
-        return False
-
-    return re.match(pattern="^[a-zA-Z0-9_.]+$", string=user) is not None
 
 
 @users_blueprint.route("/create_account", methods=["POST"])
@@ -146,8 +114,8 @@ def create_user_accounts():
     requested_user = request.json["user_name"]
     requested_password = request.json["user_password"]
 
-    # Ensure the user_name is valid
-    if not _validate_user(user=requested_user):
+    # Ensure the requested_user is valid
+    if not migraine_shared.database.validate_user(user=requested_user):
         abort(403, jsonify(message="User not allowed."))  # 403 Forbidden
 
     #
@@ -177,7 +145,7 @@ def create_user_accounts():
         abort(409, jsonify(message="User already exists."))  # 409 Conflict
 
     # Ensure the database does not already exist
-    database = _database_for_user(user=requested_user)
+    database = migraine_shared.database_for_user(user=requested_user)
     response = admin_session.head(
         urljoin(baseurl, database),
     )
@@ -295,7 +263,7 @@ def get_user_profile():
         abort(404, jsonify(message="User not found."))  # 404 Not Found
 
     # User exists, confirm database exists
-    database = _database_for_user(user=requested_user)
+    database = migraine_shared.database_for_user(user=requested_user)
     response = admin_session.head(
         urljoin(baseurl, database),
     )
