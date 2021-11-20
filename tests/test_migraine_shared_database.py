@@ -66,13 +66,13 @@ def test_admin_account_creation_and_deletion(
     response = couchdb_session_admin.get(
         urljoin(couchdb_config.baseurl, "_users/{}".format(user_doc_id)),
     )
-    assert response.status_code == 404  # Not found
+    assert response.status_code == 404  # Not Found
 
     # Ensure the database does not exist.
     response = couchdb_session_admin.get(
         urljoin(couchdb_config.baseurl, user_database)
     )
-    assert response.status_code == 404  # Not found
+    assert response.status_code == 404  # Not Found
 
     # Perform account creation.
     response = migraine_shared.database.create_account(
@@ -107,13 +107,13 @@ def test_admin_account_creation_and_deletion(
     response = couchdb_session_admin.get(
         urljoin(couchdb_config.baseurl, "_users/{}".format(user_doc_id)),
     )
-    assert response.status_code == 404  # Not found
+    assert response.status_code == 404  # Not Found
 
     # Ensure the database does not exist.
     response = couchdb_session_admin.get(
         urljoin(couchdb_config.baseurl, user_database)
     )
-    assert response.status_code == 404  # Not found
+    assert response.status_code == 404  # Not Found
 
 
 def _session_account(

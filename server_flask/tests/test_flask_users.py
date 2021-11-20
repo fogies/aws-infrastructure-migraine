@@ -92,8 +92,8 @@ def test_flask_create_account(
     )
     assert response.ok
 
-    # Response json provides the user and their database
-    # TODO: Response format across the endpoints is really inconsistent.
+    # Response json is a dictionary containing status, user_name, and database.
+    # TODO: Response format across the endpoints is inconsistent.
     #       Up to Yasaman/Anant whether to address in this deployment
     assert response.json() == {
         "status": 200,
@@ -122,8 +122,60 @@ def test_flask_get_all_users(
     )
     assert response.ok
 
-    # Response json is a list of users.
+    # Response json is a list of users, with no surrounding dictionary.
     # Ensure our sample is in that list.
-    # TODO: Response format across the endpoints is really inconsistent.
+    # TODO: Response format across the endpoints is inconsistent.
     #       Up to Yasaman/Anant whether to address in this deployment
     assert sample_account.user in response.json()
+
+
+def test_flask_get_user_profile(
+    flask_config: migraine_shared.config.FlaskConfig,
+    sample_account: AccountTuple,
+    sample_account_create,  # None, included for fixture functionality
+):
+    """
+    Test retrieval of a user profile.
+    """
+
+    assert sample_account_create is None
+
+    session = requests.session()
+    response = session.post(
+        urljoin(flask_config.baseurl, 'users/get_profile'),
+        json={
+            'secret_key': flask_config.secret_key,
+            'user_name': sample_account.user,
+        }
+    )
+    assert response.ok
+
+    # Response json is a dictionary containing status, user_name, and database.
+    # TODO: Response format across the endpoints is inconsistent.
+    #       Up to Yasaman/Anant whether to address in this deployment
+    assert response.json() == {
+        "status": 200,
+        "user_name": sample_account.user,
+        "database": migraine_shared.database.database_for_user(user=sample_account.user),
+    }
+
+
+def test_flask_get_user_profile_failure(
+    flask_config: migraine_shared.config.FlaskConfig,
+    sample_account: AccountTuple,
+):
+    """
+    Test retrieval of a user profile.
+
+    Sample account was not created, this profile retrieval should fail.
+    """
+
+    session = requests.session()
+    response = session.post(
+        urljoin(flask_config.baseurl, 'users/get_profile'),
+        json={
+            'secret_key': flask_config.secret_key,
+            'user_name': sample_account.user,
+        }
+    )
+    assert response.status_code == 404  # Not Found

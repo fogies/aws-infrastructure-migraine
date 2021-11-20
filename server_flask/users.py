@@ -1,9 +1,7 @@
 from flask import abort, Blueprint, current_app
 from flask import jsonify, request
 from flask_json import as_json
-import hashlib
 import jsonschema
-import re
 import requests
 import requests.auth
 import requests.exceptions
@@ -186,9 +184,9 @@ def get_user_profile():
     # Connect to the database
     #
 
-    baseurl = current_app.config["DATABASE_BASEURL"]
-    admin_session = _create_session(
-        baseurl=baseurl,
+    couchdb_baseurl = current_app.config["DATABASE_BASEURL"]
+    couchdb_session_admin = _create_session(
+        baseurl=couchdb_baseurl,
         user=current_app.config["DATABASE_ADMIN_USER"],
         password=current_app.config["DATABASE_ADMIN_PASSWORD"],
     )
@@ -197,25 +195,26 @@ def get_user_profile():
     # Validate the state of the database
     #
 
-    # ID of the user document and its content
+    # ID of the user document and corresponding database
     user_doc_id = "org.couchdb.user:{}".format(requested_user)
+    user_database = migraine_shared.database.database_for_user(user=requested_user)
 
     # Confirm the user exists
-    response = admin_session.get(
-        urljoin(baseurl, "_users/{}".format(user_doc_id)),
+    response = couchdb_session_admin.get(
+        urljoin(couchdb_baseurl, "_users/{}".format(user_doc_id)),
     )
     if not response.ok:
         abort(404, jsonify(message="User not found."))  # 404 Not Found
 
     # User exists, confirm database exists
-    database = migraine_shared.database_for_user(user=requested_user)
-    response = admin_session.head(
-        urljoin(baseurl, database),
+    response = couchdb_session_admin.head(
+        urljoin(couchdb_baseurl, user_database),
     )
-    response.raise_for_status()
+    if not response.ok:
+        abort(404, jsonify(message="Database not found."))  # 404 Not Found
 
     # Return the profile
-    return {"user_name": requested_user, "database": database}
+    return {"user_name": requested_user, "database": user_database}
 
 
 @users_blueprint.route("/get_all_users", methods=["POST"])
