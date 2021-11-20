@@ -56,6 +56,9 @@ def create_account(
         response.status_code = 409
         return response
 
+    # Because there are no transactions, it is possible to reach this point in a race condition.
+    # In that case, creation of the user document is atomic, so one side of the race will fail.
+
     # Create the requested user.
     response = couchdb_session_admin.put(
         urljoin(couchdb_baseurl, "_users/{}".format(user_doc_id)),

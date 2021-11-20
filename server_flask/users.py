@@ -114,88 +114,33 @@ def create_user_accounts():
     requested_user = request.json["user_name"]
     requested_password = request.json["user_password"]
 
-    # Ensure the requested_user is valid
-    if not migraine_shared.database.validate_user(user=requested_user):
-        abort(403, jsonify(message="User not allowed."))  # 403 Forbidden
-
     #
     # Connect to the database
     #
 
-    baseurl = current_app.config["DATABASE_BASEURL"]
-    admin_session = _create_session(
-        baseurl=baseurl,
+    couchdb_baseurl = current_app.config["DATABASE_BASEURL"]
+    couchdb_session_admin = _create_session(
+        baseurl=couchdb_baseurl,
         user=current_app.config["DATABASE_ADMIN_USER"],
         password=current_app.config["DATABASE_ADMIN_PASSWORD"],
     )
 
     #
-    # Validate the state of the database
-    #
-
-    # ID of the user document
-    user_doc_id = "org.couchdb.user:{}".format(requested_user)
-
-    # Ensure the user does not already exist
-    response = admin_session.get(
-        urljoin(baseurl, "_users/{}".format(user_doc_id)),
-    )
-    if response.ok:
-        # Get succeeded, so the user already exists
-        abort(409, jsonify(message="User already exists."))  # 409 Conflict
-
-    # Ensure the database does not already exist
-    database = migraine_shared.database_for_user(user=requested_user)
-    response = admin_session.head(
-        urljoin(baseurl, database),
-    )
-    if response.ok:
-        # Get succeeded, so the database already exists
-        abort(409, jsonify(message="Database already exists."))  # 409 Conflict
-
-    #
     # Create the user and their database
     #
 
-    # Because there are no transactions, it is possible to reach this point in a race condition.
-    # In that case, creation of the user document is atomic, so one side of the race will fail.
-
-    # Create the user
-    response = admin_session.put(
-        urljoin(baseurl, "_users/{}".format(user_doc_id)),
-        json={
-            "type": "user",
-            "name": requested_user,
-            "password": requested_password,
-            "roles": [],
-        },
+    response = migraine_shared.database.create_account(
+        couchdb_session_admin=couchdb_session_admin,
+        couchdb_baseurl=couchdb_baseurl,
+        account=requested_user,
+        password=requested_password,
     )
-    response.raise_for_status()
-
-    # Create the database.
-    response = admin_session.put(
-        urljoin(baseurl, database),
-    )
-    response.raise_for_status()
-
-    # Ensure the database has the desired _security document.
-    response = admin_session.put(
-        urljoin(baseurl, "{}/_security".format(database)),
-        json={
-            "members": {
-                "names": [requested_user],
-                "roles": ["_admin"],
-            },
-            "admins": {
-                "roles": ["_admin"],
-            },
-        },
-    )
-    response.raise_for_status()
+    if not response.ok:
+        return response
 
     return {
         "user_name": requested_user,
-        "database": database,
+        "database": migraine_shared.database.database_for_user(user=requested_user),
     }
 
 
