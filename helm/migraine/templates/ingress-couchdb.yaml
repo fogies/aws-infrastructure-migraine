@@ -8,9 +8,7 @@ apiVersion: 'traefik.containo.us/v1alpha1'
 kind: 'Middleware'
 
 metadata:
-  name: 'ingress-couchdb-stripprefix-db'
-  labels:
-    app: 'migraine'
+  name: '{{ Release.Name }}-ingress-couchdb-stripprefix-db'
 
 spec:
   stripPrefix:
@@ -27,13 +25,11 @@ apiVersion: 'traefik.containo.us/v1alpha1'
 kind: 'IngressRoute'
 
 metadata:
-  name: 'ingress-couchdb'
-  labels:
-    app: 'migraine'
+  name: '{{ Release.Name }}-ingress-couchdb'
 
 spec:
   entryPoints:
-    - 'web'
+    - 'websecure'
   routes:
     - kind: 'Rule'
       match: 'HostRegexp(`{any:.+}`) && PathPrefix(`/db/`)'
@@ -46,3 +42,5 @@ spec:
         - kind: 'Service'
           name: 'migraine-database-svc-couchdb'
           port: 5984
+  tls:
+    secretName: {{ .Values.tls.tlsSecret | squote }}
