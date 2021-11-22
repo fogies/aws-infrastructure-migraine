@@ -11,6 +11,8 @@ TEMPORARY_FLASK_CONFIG_PATH = "../secrets/configuration/prod_flask.yaml"
 
 class ProductionConfig(Config):
     def __init__(self, *, instance_dir: Union[Path, str]):
+        print("loading from:")
+        print(instance_dir)
         flask_config = migraine_shared.config.FlaskConfig.load(TEMPORARY_FLASK_CONFIG_PATH)
 
         Config.__init__(
