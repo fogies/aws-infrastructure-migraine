@@ -1,0 +1,51 @@
+#
+# Flask receives all traffic at /api/.
+#
+
+---
+
+#
+# Middleware to strip /api/ prefix before passing to Flask.
+#
+
+apiVersion: 'traefik.containo.us/v1alpha1'
+kind: 'Middleware'
+
+metadata:
+  name: '{{ .Release.Name }}-ingress-flask-stripprefix-api'
+
+spec:
+  stripPrefix:
+    prefixes:
+      - '/api'
+    forceSlash: false
+
+---
+
+#
+# Production route.
+#
+
+apiVersion: 'traefik.containo.us/v1alpha1'
+kind: 'IngressRoute'
+
+metadata:
+  name: '{{ .Release.Name }}-ingress-flask-prod'
+
+spec:
+  entryPoints:
+    - 'websecure'
+  routes:
+    - kind: 'Rule'
+      match: 'HostRegexp(`migraineapp.org`) && PathPrefix(`/api/`)'
+      priority: 10000
+      middlewares:
+        - name: 'enable-cors'
+          namespace: 'ingress'
+        - name: '{{ .Release.Name }}-ingress-flask-stripprefix-api'
+      services:
+        - kind: 'Service'
+          name: '{{ .Release.Name }}-flask-prod-service'
+          port: 8000
+  tls:
+    secretName: {{ .Values.tlsSecret | squote }}

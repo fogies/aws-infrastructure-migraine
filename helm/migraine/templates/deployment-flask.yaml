@@ -1,0 +1,28 @@
+apiVersion: 'apps/v1'
+kind: 'Deployment'
+metadata:
+  name: '{{ .Release.Name }}-deployment-flask'
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: '{{ .Release.Name }}-flask'
+  template:
+    metadata:
+      labels:
+        app: '{{ .Release.Name }}-flask'
+    spec:
+      containers:
+        - name: '{{ .Release.Name }}-flask'
+          image: {{ (printf "%s/%s:%s" .Values.registryUrl .Values.flask.imageName .Values.flask.imageTag) | squote }}
+          imagePullPolicy: 'Always'
+          ports:
+            - containerPort: 4000
+          resources:
+            limits:
+              # TODO
+              cpu: '100m'
+
+      imagePullSecrets:
+        - name: '{{ .Release.Name }}-secret-image-pull'

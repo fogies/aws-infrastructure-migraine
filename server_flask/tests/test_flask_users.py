@@ -1,6 +1,5 @@
 import collections
 import pytest
-import requests
 import requests.auth
 import secrets
 from urllib.parse import urljoin
@@ -10,12 +9,16 @@ import migraine_shared.database
 
 
 # Execute tests against only development.
-from tests.common.test_config_dev import couchdb_config
-from tests.common.test_config_dev import couchdb_session_admin
-from tests.common.test_config_dev import flask_config
+from tests.common.test_config_all import test_config
+from tests.common.test_config_all import couchdb_config
+from tests.common.test_config_all import couchdb_session_admin
+from tests.common.test_config_all import flask_config
+from tests.common.test_config_all import flask_session_unauthenticated
+assert test_config
 assert couchdb_config
 assert couchdb_session_admin
 assert flask_config
+assert flask_session_unauthenticated
 
 
 AccountTuple = collections.namedtuple('AccountTuple', ['user', 'password'])
@@ -72,6 +75,7 @@ def sample_account_create(
 
 def test_flask_create_account(
     flask_config: migraine_shared.config.FlaskConfig,
+    flask_session_unauthenticated: requests.Session,
     sample_account: AccountTuple,
     sample_account_delete,  # None, included for fixture functionality
 ):
@@ -81,8 +85,7 @@ def test_flask_create_account(
 
     assert sample_account_delete is None
 
-    session = requests.session()
-    response = session.post(
+    response = flask_session_unauthenticated.post(
         urljoin(flask_config.baseurl, 'users/create_account'),
         json={
             'secret_key': flask_config.secret_key,
@@ -104,6 +107,7 @@ def test_flask_create_account(
 
 def test_flask_get_all_users(
     flask_config: migraine_shared.config.FlaskConfig,
+    flask_session_unauthenticated: requests.Session,
     sample_account: AccountTuple,
     sample_account_create,  # None, included for fixture functionality
 ):
@@ -113,8 +117,7 @@ def test_flask_get_all_users(
 
     assert sample_account_create is None
 
-    session = requests.session()
-    response = session.post(
+    response = flask_session_unauthenticated.post(
         urljoin(flask_config.baseurl, 'users/get_all_users'),
         json={
             'secret_key': flask_config.secret_key,
@@ -131,6 +134,7 @@ def test_flask_get_all_users(
 
 def test_flask_get_user_profile(
     flask_config: migraine_shared.config.FlaskConfig,
+    flask_session_unauthenticated: requests.Session,
     sample_account: AccountTuple,
     sample_account_create,  # None, included for fixture functionality
 ):
@@ -140,8 +144,7 @@ def test_flask_get_user_profile(
 
     assert sample_account_create is None
 
-    session = requests.session()
-    response = session.post(
+    response = flask_session_unauthenticated.post(
         urljoin(flask_config.baseurl, 'users/get_profile'),
         json={
             'secret_key': flask_config.secret_key,
@@ -162,6 +165,7 @@ def test_flask_get_user_profile(
 
 def test_flask_get_user_profile_failure(
     flask_config: migraine_shared.config.FlaskConfig,
+    flask_session_unauthenticated: requests.Session,
     sample_account: AccountTuple,
 ):
     """
@@ -170,8 +174,7 @@ def test_flask_get_user_profile_failure(
     Sample account was not created, this profile retrieval should fail.
     """
 
-    session = requests.session()
-    response = session.post(
+    response = flask_session_unauthenticated.post(
         urljoin(flask_config.baseurl, 'users/get_profile'),
         json={
             'secret_key': flask_config.secret_key,

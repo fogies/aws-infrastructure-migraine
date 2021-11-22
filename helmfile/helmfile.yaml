@@ -51,7 +51,7 @@ releases:
         # couchdbConfig:
         #   couchdb:
         #     uuid: 'XXXXXXXXXX'
-      - clusterSize: 1
+      - clusterSize: 3
         image:
           repository: 'couchdb'
           tag: '3.2.0'
@@ -98,6 +98,10 @@ releases:
     needs:
       - 'ingress'
     values:
+      - './values/ecr_generated.values.yaml'
+        # registryUrl: 'XXXXXXXXXX'
+        # registryUser: 'XXXXXXXXXX'
+        # registryPassword: 'XXXXXXXXXX'
       - tls:
           # Should be 'letsencrypt-staging' or 'letsencrypt'
           issuer: 'letsencrypt'

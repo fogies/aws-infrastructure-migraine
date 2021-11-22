@@ -17,38 +17,35 @@ def _initialize(couchdb_config: migraine_shared.config.CouchDBConfig):
     """
     Helper to initialize a database.
     """
-    try:
-        # Confirm the database is online
-        response = requests.get(
-            urljoin(couchdb_config.baseurl, ''),
-        )
-        response.raise_for_status()
+    # Confirm the database is online
+    response = requests.get(
+        urljoin(couchdb_config.baseurl, ''),
+    )
+    response.raise_for_status()
 
-        # Create basic authentication credentials as the administrator
-        admin_auth = requests.auth.HTTPBasicAuth(
-            username=couchdb_config.admin_user,
-            password=couchdb_config.admin_password
-        )
+    # Create basic authentication credentials as the administrator
+    admin_auth = requests.auth.HTTPBasicAuth(
+        username=couchdb_config.admin_user,
+        password=couchdb_config.admin_password
+    )
 
-        # Check whether the cluster has previously been finished (i.e., in a previous initialize)
-        response = requests.get(
+    # Check whether the cluster has previously been finished (i.e., in a previous initialize)
+    response = requests.get(
+        urljoin(couchdb_config.baseurl, '_cluster_setup'),
+        auth=admin_auth,
+    )
+    response.raise_for_status()
+
+    # If the cluster was not finished in a previous initialize, do that now
+    if response.json()['state'] != 'cluster_finished':
+        response = requests.post(
             urljoin(couchdb_config.baseurl, '_cluster_setup'),
+            json={
+                'action': 'finish_cluster'
+            },
             auth=admin_auth,
         )
         response.raise_for_status()
-
-        # If the cluster was not finished in a previous initialize, do that now
-        if response.json()['state'] != 'cluster_finished':
-            response = requests.post(
-                urljoin(couchdb_config.baseurl, '_cluster_setup'),
-                json={
-                    'action': 'finish_cluster'
-                },
-                auth=admin_auth,
-            )
-            response.raise_for_status()
-    except requests.exceptions.HTTPError as error:
-        print(error)
 
 
 @task
