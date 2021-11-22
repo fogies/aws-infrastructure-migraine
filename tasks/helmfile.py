@@ -19,7 +19,7 @@ SSH_CONFIG_PATH = Path(INSTANCE_TERRAFORM_DIR, INSTANCE_NAME, 'ssh_config.yaml')
 
 DEV_COUCHDB_CONFIG_PATH = "./secrets/configuration/dev_couchdb.yaml"
 PROD_COUCHDB_CONFIG_PATH = "./secrets/configuration/prod_couchdb.yaml"
-
+PROD_FLASK_CONFIG_PATH = "./secrets/configuration/prod_flask.yaml"
 
 # Helmfile deployment requires information on CouchDB development configuration
 def couchdb_dev_helmfile_values_factory(*, context):
@@ -53,6 +53,23 @@ def couchdb_prod_helmfile_values_factory(*, context):
     }
 
 
+# Helmfile deployment requires information on Flask production configuration
+def flask_prod_helmfile_values_factory(*, context):
+    flask_config = migraine_shared.config.FlaskConfig.load(flask_config_path=PROD_FLASK_CONFIG_PATH)
+
+    return {
+        'flask': {
+            'baseurl': flask_config.baseurl,
+            'secret_key': flask_config.secret_key,
+            'database_url': flask_config.database_baseurl,
+            'database_admin': {
+                'user': flask_config.database_admin_user,
+                'password': flask_config.database_admin_password,
+            }
+        }
+    }
+
+
 # Helmfile deployment requires information on accessing the ECR
 def ecr_helmfile_values_factory(*, context):
     with tasks.terraform.ecr.ecr_read_only(context=context) as ecr_read_only:
@@ -74,6 +91,7 @@ task_helmfile_migraine_apply = aws_infrastructure.tasks.library.instance_helmfil
         'ecr_generated': ecr_helmfile_values_factory,
         'secrets_couchdb_dev_generated': couchdb_dev_helmfile_values_factory,
         'secrets_couchdb_prod_generated': couchdb_prod_helmfile_values_factory,
+        'secrets_flask_prod_generated': flask_prod_helmfile_values_factory,
     },
 )
 task_helmfile_migraine_apply.__doc__ = 'Apply helmfile/helmfile.yaml in the instance.'

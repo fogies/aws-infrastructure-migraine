@@ -58,10 +58,10 @@ releases:
           pullPolicy: 'Always'
         resources:
           requests:
-            cpu: 200m
+            cpu: 100m
             memory: 128Mi
           limits:
-            cpu: 200m
+            cpu: 100m
             memory: 256Mi
 
   # CouchDB instance for production
@@ -84,10 +84,10 @@ releases:
           pullPolicy: 'Always'
         resources:
           requests:
-            cpu: 200m
+            cpu: 100m
             memory: 128Mi
           limits:
-            cpu: 200m
+            cpu: 100m
             memory: 256Mi
 
   # migraine
@@ -102,6 +102,14 @@ releases:
         # registryUrl: 'XXXXXXXXXX'
         # registryUser: 'XXXXXXXXXX'
         # registryPassword: 'XXXXXXXXXX'
+      - './values/secrets_flask_prod_generated.values.yaml'
+        # flask:
+        #   baseurl: 'XXXXXXXXXX'
+        #   secret_key: 'XXXXXXXXXX'
+        #   database_url: 'XXXXXXXXXX'
+        #   database_admin:
+        #     user: 'XXXXXXXXXX'
+        #     password: 'XXXXXXXXXX'
       - tls:
           # Should be 'letsencrypt-staging' or 'letsencrypt'
           issuer: 'letsencrypt'

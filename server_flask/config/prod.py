@@ -5,15 +5,10 @@ from config.base import Config
 import migraine_shared.config
 
 
-# Path is relative to server_flask
-TEMPORARY_FLASK_CONFIG_PATH = "../secrets/configuration/prod_flask.yaml"
-
-
 class ProductionConfig(Config):
     def __init__(self, *, instance_dir: Union[Path, str]):
-        print("loading from:")
-        print(instance_dir)
-        flask_config = migraine_shared.config.FlaskConfig.load(TEMPORARY_FLASK_CONFIG_PATH)
+        flask_config_path = Path(instance_dir, "flask_config.yaml")
+        flask_config = migraine_shared.config.FlaskConfig.load(flask_config_path=flask_config_path)
 
         Config.__init__(
             self=self,
