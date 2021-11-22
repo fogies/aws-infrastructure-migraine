@@ -28,7 +28,7 @@ releases:
   - name: 'ingress'
     namespace: 'ingress'
     chart: 'aws-infrastructure/ingress'
-    version: '0.6.0'
+    version: '0.7.0'
     needs:
       - 'ingress-crd'
     # values:
@@ -38,13 +38,39 @@ releases:
     #         general:
     #           level: 'DEBUG'
 
-  # CouchDB instance
-  - name: 'migraine-database'
+  # CouchDB instance for development
+  - name: 'migraine-database-dev'
     namespace: 'migraine'
     chart: 'couchdb/couchdb'
     version: '3.3.4'
     values:
-      - './values/secrets_couchdb_generated.values.yaml'
+      - './values/secrets_couchdb_dev_generated.values.yaml'
+        # adminUsername: 'XXXXXXXXXX'
+        # adminPassword: 'XXXXXXXXXX'
+        # cookieAuthSecret: 'XXXXXXXXXX'
+        # couchdbConfig:
+        #   couchdb:
+        #     uuid: 'XXXXXXXXXX'
+      - clusterSize: 1
+        image:
+          repository: 'couchdb'
+          tag: '3.2.0'
+          pullPolicy: 'Always'
+        resources:
+          requests:
+            cpu: 200m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+
+  # CouchDB instance for production
+  - name: 'migraine-database-prod'
+    namespace: 'migraine'
+    chart: 'couchdb/couchdb'
+    version: '3.3.4'
+    values:
+      - './values/secrets_couchdb_prod_generated.values.yaml'
         # adminUsername: 'XXXXXXXXXX'
         # adminPassword: 'XXXXXXXXXX'
         # cookieAuthSecret: 'XXXXXXXXXX'
@@ -64,33 +90,17 @@ releases:
             cpu: 200m
             memory: 256Mi
 
-  # migraine-celery
+  # migraine
   # Installed from a local chart, managed in helmfile-config.yaml
-  - name: 'migraine-celery'
+  - name: 'migraine'
     namespace: 'migraine'
-    chart: './charts/migraine-celery.tgz'
-    values:
-      - './values/ecr_generated.values.yaml'
-
-  # migraine-flask
-  # Installed from a local chart, managed in helmfile-config.yaml
-  - name: 'migraine-flask'
-    namespace: 'migraine'
-    chart: './charts/migraine-flask.tgz'
-    values:
-      - './values/ecr_generated.values.yaml'
-      - imageName: 'aws_infrastructure_migraine/migraine_flask'
-        imageTag: 'latest'
-
-  # migraine-ingress
-  # Installed from a local chart, managed in helmfile-config.yaml
-  - name: 'migraine-ingress'
-    namespace: 'migraine'
-    chart: './charts/migraine-ingress.tgz'
+    chart: './charts/migraine.tgz'
     needs:
       - 'ingress'
     values:
-      - serviceFlask: 'migraine-flask'
+      - tls:
+          # Should be 'letsencrypt-staging' or 'letsencrypt'
+          issuer: 'letsencrypt'
 
 helmDefaults:
   # Prefer explicit management of CRDs via releases
