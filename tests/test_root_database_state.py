@@ -6,22 +6,11 @@ import requests
 import requests.auth
 from urllib.parse import urljoin
 
-
 # Execute tests against both development and production.
+from tests.common.test_config_all import test_config
 from tests.common.test_config_all import couchdb_config
+assert test_config
 assert couchdb_config
-
-
-def test_database_reachable(couchdb_config):
-    """
-    Test database is responding at expected baseurl.
-    """
-
-    session = requests.session()
-    response = session.get(
-        urljoin(couchdb_config.baseurl, ''),
-    )
-    assert response.ok
 
 
 def test_database_initialized(couchdb_config):
