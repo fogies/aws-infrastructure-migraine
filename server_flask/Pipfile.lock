@@ -293,7 +293,6 @@
 			"version": "==2.0.2"
 		}
 	},
-<<<<<<< HEAD
 	"develop": {
 		"atomicwrites": {
 			"hashes": [
@@ -375,7 +374,4 @@
 			"version": "==0.10.2"
 		}
 	}
-=======
-	"develop": {}
->>>>>>> b571913 (Commiting)
 }
