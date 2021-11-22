@@ -29,9 +29,6 @@ ns_codebuild = Collection('codebuild')
 compose_collection(ns_codebuild, tasks.codebuild.migraine_flask.ns, name='flask')
 compose_collection(ns, ns_codebuild, name='codebuild')
 
-# Compose from database.py
-compose_collection(ns, tasks.database.ns, name='database')
-
 # Compose from dependencies.py
 compose_collection(ns, tasks.dependencies.ns, name='depend')
 
@@ -49,6 +46,18 @@ compose_collection(ns, tasks.tests.ns, name='test')
 #
 ns_dev = Collection('dev')
 ns_prod = Collection('prod')
+
+# Compose from database.py
+compose_collection(
+    ns_dev,
+    tasks.database.ns.collections['dev'],
+    name='database',
+)
+compose_collection(
+    ns_prod,
+    tasks.database.ns.collections['prod'],
+    name='database',
+)
 
 # # Compose from celery.py
 # compose_collection(
