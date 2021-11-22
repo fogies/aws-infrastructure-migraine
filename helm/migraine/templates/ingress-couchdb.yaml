@@ -1,14 +1,18 @@
 #
-# Capture all traffic that attempts to access /db/.
+# Database receives all traffic at /db/.
 #
 
-# https://doc.traefik.io/traefik/middlewares/stripprefix/
+---
+
+#
+# Middleware to strip /db/ prefix before passing to database.
+#
 
 apiVersion: 'traefik.containo.us/v1alpha1'
 kind: 'Middleware'
 
 metadata:
-  name: '{{ Release.Name }}-ingress-couchdb-stripprefix-db'
+  name: '{{ .Release.Name }}-ingress-couchdb-stripprefix-db'
 
 spec:
   stripPrefix:
@@ -18,29 +22,60 @@ spec:
 
 ---
 
-# https://kubernetes.io/docs/concepts/services-networking/ingress/
-# https://www.thebookofjoel.com/k3s-cert-manager-letsencrypt
+#
+# Development route.
+#
 
 apiVersion: 'traefik.containo.us/v1alpha1'
 kind: 'IngressRoute'
 
 metadata:
-  name: '{{ Release.Name }}-ingress-couchdb'
+  name: '{{ .Release.Name }}-ingress-couchdb-dev'
 
 spec:
   entryPoints:
     - 'websecure'
   routes:
     - kind: 'Rule'
-      match: 'HostRegexp(`{any:.+}`) && PathPrefix(`/db/`)'
+      match: 'HostRegexp(`dev.migraineapp.org`) && PathPrefix(`/db/`)'
       priority: 10000
       middlewares:
         - name: 'enable-cors'
           namespace: 'ingress'
-        - name: 'ingress-couchdb-stripprefix-db'
+        - name: '{{ .Release.Name }}-ingress-couchdb-stripprefix-db'
       services:
         - kind: 'Service'
-          name: 'migraine-database-svc-couchdb'
+          name: 'migraine-database-dev-svc-couchdb'
+          port: 5984
+  tls:
+    secretName: {{ .Values.tls.tlsSecret | squote }}
+
+---
+
+#
+# Production route.
+#
+
+apiVersion: 'traefik.containo.us/v1alpha1'
+kind: 'IngressRoute'
+
+metadata:
+  name: '{{ .Release.Name }}-ingress-couchdb-prod'
+
+spec:
+  entryPoints:
+    - 'websecure'
+  routes:
+    - kind: 'Rule'
+      match: 'HostRegexp(`migraineapp.org`) && PathPrefix(`/db/`)'
+      priority: 10000
+      middlewares:
+        - name: 'enable-cors'
+          namespace: 'ingress'
+        - name: '{{ .Release.Name }}-ingress-couchdb-stripprefix-db'
+      services:
+        - kind: 'Service'
+          name: 'migraine-database-prod-svc-couchdb'
           port: 5984
   tls:
     secretName: {{ .Values.tls.tlsSecret | squote }}
