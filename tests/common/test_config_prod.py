@@ -18,6 +18,3 @@ test_couchdb_session_admin = migraine_shared.testing.create_test_couchdb_session
 flask_config = migraine_shared.testing.create_flask_config(test_config=test_config)
 flask_session_unauthenticated = migraine_shared.testing.create_flask_session_unauthenticated(flask_config=flask_config)
 test_flask_session_unauthenticated = migraine_shared.testing.create_test_flask_session_unauthenticated(flask_config=flask_config)
-
-# TODO: Expected to fail until production online
-test_flask_session_unauthenticated = pytest.mark.xfail(test_flask_session_unauthenticated)

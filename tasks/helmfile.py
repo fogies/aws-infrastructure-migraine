@@ -61,7 +61,7 @@ def flask_prod_helmfile_values_factory(*, context):
         'flask': {
             'baseurl': flask_config.baseurl,
             'secret_key': flask_config.secret_key,
-            'database_url': flask_config.database_baseurl,
+            'database_baseurl': flask_config.database_baseurl,
             'database_admin': {
                 'user': flask_config.database_admin_user,
                 'password': flask_config.database_admin_password,

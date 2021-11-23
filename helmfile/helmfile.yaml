@@ -40,7 +40,7 @@ releases:
 
   # CouchDB instance for development
   - name: 'migraine-database-dev'
-    namespace: 'migraine'
+    namespace: 'migraine-database-dev'
     chart: 'couchdb/couchdb'
     version: '3.3.4'
     values:
@@ -58,15 +58,15 @@ releases:
           pullPolicy: 'Always'
         resources:
           requests:
-            cpu: 100m
+            cpu: 50m
             memory: 128Mi
           limits:
-            cpu: 100m
+            cpu: 250m
             memory: 256Mi
 
   # CouchDB instance for production
   - name: 'migraine-database-prod'
-    namespace: 'migraine'
+    namespace: 'migraine-database-prod'
     chart: 'couchdb/couchdb'
     version: '3.3.4'
     values:
@@ -87,7 +87,7 @@ releases:
             cpu: 100m
             memory: 128Mi
           limits:
-            cpu: 100m
+            cpu: 250m
             memory: 256Mi
 
   # migraine

@@ -46,6 +46,7 @@ spec:
       services:
         - kind: 'Service'
           name: 'migraine-database-dev-svc-couchdb'
+          namespace: 'migraine-database-dev'
           port: 5984
   tls:
     secretName: {{ .Values.tls.tlsSecret | squote }}
@@ -76,6 +77,7 @@ spec:
       services:
         - kind: 'Service'
           name: 'migraine-database-prod-svc-couchdb'
+          namespace: 'migraine-database-prod'
           port: 5984
   tls:
     secretName: {{ .Values.tls.tlsSecret | squote }}

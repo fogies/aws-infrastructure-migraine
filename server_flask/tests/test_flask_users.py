@@ -9,11 +9,11 @@ import migraine_shared.database
 
 
 # Execute tests against only development.
-from tests.common.test_config_all import test_config
-from tests.common.test_config_all import couchdb_config
-from tests.common.test_config_all import couchdb_session_admin
-from tests.common.test_config_all import flask_config
-from tests.common.test_config_all import flask_session_unauthenticated
+from tests.common.test_config_dev import test_config
+from tests.common.test_config_dev import couchdb_config
+from tests.common.test_config_dev import couchdb_session_admin
+from tests.common.test_config_dev import flask_config
+from tests.common.test_config_dev import flask_session_unauthenticated
 assert test_config
 assert couchdb_config
 assert couchdb_session_admin

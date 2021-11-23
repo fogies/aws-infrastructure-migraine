@@ -1,33 +1,20 @@
+from dataclasses import dataclass
 from pathlib import Path
 import ruamel.yaml
 from typing import Union
 
 
+@dataclass(frozen=True)
 class CouchDBConfig:
     """
     Parse configuration for clients of a CouchDB instance.
     """
 
-    _admin_password: str
-    _admin_user: str
-    _baseurl: str
-    _cookie_auth_secret: str
-    _uuid: str
-
-    def __init__(
-        self,
-        *,
-        baseurl: str,
-        admin_user: str,
-        admin_password: str,
-        cookie_auth_secret: str,
-        uuid: str,
-    ):
-        self._baseurl = baseurl
-        self._admin_user = admin_user
-        self._admin_password = admin_password
-        self._cookie_auth_secret = cookie_auth_secret
-        self._uuid = uuid
+    admin_password: str
+    admin_user: str
+    baseurl: str
+    cookie_auth_secret: str
+    uuid: str
 
     @staticmethod
     def load(couchdb_config_path: Union[Path, str]):
@@ -49,26 +36,6 @@ class CouchDBConfig:
             cookie_auth_secret=yaml_config["cookieAuthSecret"],
             uuid=yaml_config["uuid"]
         )
-
-    @property
-    def admin_password(self) -> str:
-        return self._admin_password
-
-    @property
-    def admin_user(self) -> str:
-        return self._admin_user
-
-    @property
-    def baseurl(self) -> str:
-        return self._baseurl
-
-    @property
-    def cookie_auth_secret(self) -> str:
-        return self._cookie_auth_secret
-
-    @property
-    def uuid(self) -> str:
-        return self._uuid
 
 
 class FlaskConfig:
