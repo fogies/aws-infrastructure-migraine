@@ -1,0 +1,22 @@
+#
+# Required values.
+#
+
+# TLS configuration
+tls:
+  # Name of TLS secret to create
+  tlsSecret: 'tls-migraineapp.org'
+
+  # Should be 'letsencrypt-staging' or 'letsencrypt'
+  issuer: 'letsencrypt-staging'
+
+  # List of names to issue
+  dnsNames:
+    # First name will also be used as common name
+    - 'migraineapp.org'
+    - 'dev.migraineapp.org'
+
+# Flask configuration
+flask:
+  imageName: 'aws_infrastructure_migraine/migraine_flask'
+  imageTag: 'latest'
