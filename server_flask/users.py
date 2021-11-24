@@ -300,11 +300,15 @@ def get_all_users():
     ]
 
 
-# GET all users from couchdb
 @users_blueprint.route("/", methods=["GET"])
 @as_json
 @secure
 def get_users():
+    """GET all users
+
+    Returns:
+        {"users": [list of users]}
+    """
     #
     # Connect to the database
     #
@@ -341,11 +345,21 @@ def get_users():
     }
 
 
-# Get single user from couchdb
 @users_blueprint.route("/<string:user_name>", methods=["GET"])
 @as_json
 @secure
 def get_user(user_name):
+    """GET user_name from couchdb
+
+    Args:
+        user_name ([string]): [User name]
+
+    Returns:
+    {
+        "user_name": user_name,
+        "database": "existing database for the user."
+    }
+    """
     #
     # Connect to the database
     #
