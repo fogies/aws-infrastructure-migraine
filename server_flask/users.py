@@ -305,7 +305,6 @@ def get_all_users():
 @as_json
 @secure
 def get_users():
-    current_app.logger.info("Get all users")
     #
     # Connect to the database
     #
@@ -347,7 +346,6 @@ def get_users():
 @as_json
 @secure
 def get_user(user_name):
-    current_app.logger.info("Get single user_name user")
     #
     # Connect to the database
     #
