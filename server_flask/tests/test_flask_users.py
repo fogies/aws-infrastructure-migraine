@@ -13,17 +13,18 @@ import migraine_shared.database
 from tests.common.test_config_dev import couchdb_config
 from tests.common.test_config_dev import couchdb_session_admin
 from tests.common.test_config_dev import flask_config
+
 assert couchdb_config
 assert couchdb_session_admin
 assert flask_config
 
 
-AccountTuple = collections.namedtuple('AccountTuple', ['user', 'password'])
+AccountTuple = collections.namedtuple("AccountTuple", ["user", "password"])
 
 
 @pytest.fixture
 def sample_account() -> AccountTuple:
-    return AccountTuple('test_flask_user', secrets.token_urlsafe())
+    return AccountTuple("test_flask_user", secrets.token_urlsafe())
 
 
 @pytest.fixture()
@@ -53,7 +54,7 @@ def sample_account_create(
     couchdb_config: migraine_shared.config.CouchDBConfig,
     couchdb_session_admin: requests.Session,
     sample_account: AccountTuple,
-    sample_account_delete
+    sample_account_delete,
 ):
     """
     Fixture to create sample_account.  Uses sample_account_delete to also delete sample_account.
@@ -70,25 +71,26 @@ def sample_account_create(
     yield
 
 
-def test_flask_create_account(
+def test_flask_create_user_account(
     flask_config: migraine_shared.config.FlaskConfig,
     sample_account: AccountTuple,
     sample_account_delete,  # None, included for fixture functionality
 ):
     """
-    Test creation of an account.
+    Test creation of a user account.
     """
 
     assert sample_account_delete is None
 
     session = requests.session()
     response = session.post(
-        urljoin(flask_config.baseurl, 'users/create_account'),
+        urljoin(flask_config.baseurl, "users/"),
         json={
-            'secret_key': flask_config.secret_key,
-            'user_name': sample_account.user,
-            'user_password': sample_account.password,
-        }
+            "secret_key": flask_config.secret_key,
+            "user_name": sample_account.user,
+            "user_password": sample_account.password,
+        },
+        headers={"Authorization": "Bearer " + flask_config.secret_key},
     )
     assert response.ok
 
@@ -98,7 +100,9 @@ def test_flask_create_account(
     assert response.json() == {
         "status": 200,
         "user_name": sample_account.user,
-        "database": migraine_shared.database.database_for_user(user=sample_account.user),
+        "database": migraine_shared.database.database_for_user(
+            user=sample_account.user
+        ),
     }
 
 
@@ -114,11 +118,9 @@ def test_flask_get_all_users(
     assert sample_account_create is None
 
     session = requests.session()
-    response = session.post(
-        urljoin(flask_config.baseurl, 'users/get_all_users'),
-        json={
-            'secret_key': flask_config.secret_key,
-        }
+    response = session.get(
+        urljoin(flask_config.baseurl, "users/"),
+        headers={"Authorization": "Bearer " + flask_config.secret_key},
     )
     assert response.ok
 
@@ -126,10 +128,11 @@ def test_flask_get_all_users(
     # Ensure our sample is in that list.
     # TODO: Response format across the endpoints is inconsistent.
     #       Up to Yasaman/Anant whether to address in this deployment
-    assert sample_account.user in response.json()
+    # NOTE: @James - response format is consistent with other responses.
+    assert sample_account.user in response.json()["users"]
 
 
-def test_flask_get_user_profile(
+def test_flask_get_user(
     flask_config: migraine_shared.config.FlaskConfig,
     sample_account: AccountTuple,
     sample_account_create,  # None, included for fixture functionality
@@ -141,12 +144,9 @@ def test_flask_get_user_profile(
     assert sample_account_create is None
 
     session = requests.session()
-    response = session.post(
-        urljoin(flask_config.baseurl, 'users/get_profile'),
-        json={
-            'secret_key': flask_config.secret_key,
-            'user_name': sample_account.user,
-        }
+    response = session.get(
+        urljoin(flask_config.baseurl, "users/" + sample_account.user),
+        headers={"Authorization": "Bearer " + flask_config.secret_key},
     )
     assert response.ok
 
@@ -156,11 +156,13 @@ def test_flask_get_user_profile(
     assert response.json() == {
         "status": 200,
         "user_name": sample_account.user,
-        "database": migraine_shared.database.database_for_user(user=sample_account.user),
+        "database": migraine_shared.database.database_for_user(
+            user=sample_account.user
+        ),
     }
 
 
-def test_flask_get_user_profile_failure(
+def test_flask_get_user_failure(
     flask_config: migraine_shared.config.FlaskConfig,
     sample_account: AccountTuple,
 ):
@@ -171,11 +173,8 @@ def test_flask_get_user_profile_failure(
     """
 
     session = requests.session()
-    response = session.post(
-        urljoin(flask_config.baseurl, 'users/get_profile'),
-        json={
-            'secret_key': flask_config.secret_key,
-            'user_name': sample_account.user,
-        }
+    response = session.get(
+        urljoin(flask_config.baseurl, "users/" + sample_account.user),
+        headers={"Authorization": "Bearer " + flask_config.secret_key},
     )
     assert response.status_code == 404  # Not Found
