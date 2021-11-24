@@ -13,18 +13,3 @@
 terraform.tfstate
 terraform.tfstate.backup
 terraform.tfstate.lock.info
-
-# Local Staging
-/.staging/
-
-# Secrets, defined using /** so we can also define exceptions
-# TODO: can we do this with local .gitignore files instead?
-/secrets/**
-
-# Exception to create /secrets/
-!/secrets/aws
-!/secrets/aws/.gitignore
-!/secrets/configuration
-!/secrets/configuration/.gitignore
-!/secrets/tests
-!/secrets/tests/.gitignore
