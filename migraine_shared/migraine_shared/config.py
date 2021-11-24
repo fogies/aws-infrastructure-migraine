@@ -38,33 +38,19 @@ class CouchDBConfig:
         )
 
 
+@dataclass(frozen=True)
 class FlaskConfig:
     """
     Parse configuration for a Flask instance.
     """
 
-    _baseurl: str
-    _secret_key: str
+    baseurl: str
+    secret_key: str
 
-    _database_baseurl: str
-    _database_admin_password: str
-    _database_admin_user: str
+    database_baseurl: str
+    database_admin_password: str
+    database_admin_user: str
 
-
-    def __init__(
-        self,
-        *,
-        baseurl: str,
-        secret_key: str,
-        database_baseurl: str,
-        database_admin_user: str,
-        database_admin_password: str,
-    ):
-        self._baseurl = baseurl
-        self._secret_key = secret_key
-        self._database_baseurl = database_baseurl
-        self._database_admin_user = database_admin_user
-        self._database_admin_password = database_admin_password
 
     @staticmethod
     def load(flask_config_path: Union[Path, str]):
@@ -85,23 +71,3 @@ class FlaskConfig:
             database_admin_user=yaml_config["database_admin"]["user"],
             database_admin_password=yaml_config["database_admin"]["password"],
         )
-
-    @property
-    def baseurl(self) -> str:
-        return self._baseurl
-
-    @property
-    def database_admin_password(self) -> str:
-        return self._database_admin_password
-
-    @property
-    def database_admin_user(self) -> str:
-        return self._database_admin_user
-
-    @property
-    def database_baseurl(self) -> str:
-        return self._database_baseurl
-
-    @property
-    def secret_key(self) -> str:
-        return self._secret_key

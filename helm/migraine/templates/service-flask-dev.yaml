@@ -1,0 +1,70 @@
+#
+# Service, Deployment, and ConfigMap for Development Flask.
+#
+
+---
+
+apiVersion: 'v1'
+kind: 'Service'
+metadata:
+  name: '{{ .Release.Name }}-flask-dev-service'
+
+spec:
+  selector:
+    app: '{{ .Release.Name }}-flask-dev'
+  ports:
+    - port: 8000
+      targetPort: 4000
+      protocol: 'TCP'
+
+---
+
+apiVersion: 'apps/v1'
+kind: 'Deployment'
+metadata:
+  name: '{{ .Release.Name }}-deployment-flask-dev'
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: '{{ .Release.Name }}-flask-dev'
+  template:
+    metadata:
+      labels:
+        app: '{{ .Release.Name }}-flask-dev'
+    spec:
+      containers:
+        - name: '{{ .Release.Name }}-flask-dev'
+          image: {{ (printf "%s/%s:%s" .Values.registryUrl .Values.flask.dev.imageName .Values.flask.dev.imageTag) | squote }}
+          imagePullPolicy: 'Always'
+          ports:
+            - containerPort: 4000
+          volumeMounts:
+            - name: '{{ .Release.Name }}-flask-dev-config-instance'
+              mountPath: '/cloned_repository/server_flask/instance/'
+          resources:
+            limits:
+              # TODO
+              cpu: '50m'
+      volumes:
+        - name: '{{ .Release.Name }}-flask-dev-config-instance'
+          configMap:
+            name: '{{ .Release.Name }}-configmap-flask-dev-config-instance'
+      imagePullSecrets:
+        - name: '{{ .Release.Name }}-secret-image-pull'
+
+---
+
+apiVersion: 'v1'
+kind: 'ConfigMap'
+metadata:
+  name: '{{ .Release.Name }}-configmap-flask-dev-config-instance'
+data:
+  flask_config.yaml: |
+    baseurl: '{{ .Values.flask.dev.baseurl }}'
+    secret_key: '{{ .Values.flask.dev.secret_key }}'
+    database_baseurl: '{{ .Values.flask.dev.database_baseurl }}'
+    database_admin:
+      user: '{{ .Values.flask.dev.database_admin.user }}'
+      password: '{{ .Values.flask.dev.database_admin.password }}'

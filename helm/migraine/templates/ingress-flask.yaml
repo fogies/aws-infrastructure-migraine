@@ -49,3 +49,61 @@ spec:
           port: 8000
   tls:
     secretName: {{ .Values.tlsSecret | squote }}
+
+---
+
+#
+# Development route.
+#
+
+apiVersion: 'traefik.containo.us/v1alpha1'
+kind: 'IngressRoute'
+
+metadata:
+  name: '{{ .Release.Name }}-ingress-flask-dev'
+
+spec:
+  entryPoints:
+    - 'websecure'
+  routes:
+    - kind: 'Rule'
+      match: 'HostRegexp(`dev.migraineapp.org`) && PathPrefix(`/api/`)'
+      priority: 10000
+      middlewares:
+        - name: 'enable-cors'
+          namespace: 'ingress'
+        - name: '{{ .Release.Name }}-ingress-flask-stripprefix-api'
+      services:
+        - kind: 'Service'
+          name: '{{ .Release.Name }}-flask-dev-service'
+          port: 8000
+  tls:
+    secretName: {{ .Values.tlsSecret | squote }}
+
+---
+
+#
+# Development route without SSL.
+#
+
+apiVersion: 'traefik.containo.us/v1alpha1'
+kind: 'IngressRoute'
+
+metadata:
+  name: '{{ .Release.Name }}-ingress-flask-dev-insecure'
+
+spec:
+  entryPoints:
+    - 'web'
+  routes:
+    - kind: 'Rule'
+      match: 'HostRegexp(`dev.migraineapp.org`) && PathPrefix(`/api/`)'
+      priority: 10000
+      middlewares:
+        - name: 'enable-cors'
+          namespace: 'ingress'
+        - name: '{{ .Release.Name }}-ingress-flask-stripprefix-api'
+      services:
+        - kind: 'Service'
+          name: '{{ .Release.Name }}-flask-dev-service'
+          port: 8000

@@ -18,6 +18,7 @@ HELMFILE_CONFIG_PATH = './helmfile/helmfile_config.yaml'
 SSH_CONFIG_PATH = Path(INSTANCE_TERRAFORM_DIR, INSTANCE_NAME, 'ssh_config.yaml')
 
 DEV_COUCHDB_CONFIG_PATH = "./secrets/configuration/dev_couchdb.yaml"
+DEV_FLASK_CONFIG_PATH = "./secrets/configuration/dev_server_flask.yaml"
 PROD_COUCHDB_CONFIG_PATH = "./secrets/configuration/prod_couchdb.yaml"
 PROD_FLASK_CONFIG_PATH = "./secrets/configuration/prod_flask.yaml"
 
@@ -55,17 +56,29 @@ def couchdb_prod_helmfile_values_factory(*, context):
 
 # Helmfile deployment requires information on Flask production configuration
 def flask_prod_helmfile_values_factory(*, context):
-    flask_config = migraine_shared.config.FlaskConfig.load(flask_config_path=PROD_FLASK_CONFIG_PATH)
+    flask_config_dev = migraine_shared.config.FlaskConfig.load(flask_config_path=DEV_FLASK_CONFIG_PATH)
+    flask_config_prod = migraine_shared.config.FlaskConfig.load(flask_config_path=PROD_FLASK_CONFIG_PATH)
 
     return {
         'flask': {
-            'baseurl': flask_config.baseurl,
-            'secret_key': flask_config.secret_key,
-            'database_baseurl': flask_config.database_baseurl,
-            'database_admin': {
-                'user': flask_config.database_admin_user,
-                'password': flask_config.database_admin_password,
-            }
+            'dev': {
+                'baseurl': flask_config_dev.baseurl,
+                'secret_key': flask_config_dev.secret_key,
+                'database_baseurl': flask_config_dev.database_baseurl,
+                'database_admin': {
+                    'user': flask_config_dev.database_admin_user,
+                    'password': flask_config_dev.database_admin_password,
+                },
+            },
+            'prod': {
+                'baseurl': flask_config_prod.baseurl,
+                'secret_key': flask_config_prod.secret_key,
+                'database_baseurl': flask_config_prod.database_baseurl,
+                'database_admin': {
+                    'user': flask_config_prod.database_admin_user,
+                    'password': flask_config_prod.database_admin_password,
+                },
+            },
         }
     }
 
