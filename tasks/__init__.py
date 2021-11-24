@@ -103,11 +103,12 @@ ns.add_collection(ns_terraform, 'terraform')
 #
 # Old Terraform infrastructure
 #
-
-ns_terraform_old = Collection('terraform-old')
-
-compose_collection(ns_terraform_old, tasks.terraform_old.ecr.ns, name='ecr')
-compose_collection(ns_terraform_old, tasks.terraform_old.eip.ns, name='eip')
-compose_collection(ns_terraform_old, tasks.terraform_old.instance.ns, name='instance')
-
-ns.add_collection(ns_terraform_old, 'terraform-old')
+# Cannot work without tasks being modified for new directory structure.
+#
+# ns_terraform_old = Collection('terraform-old')
+#
+# compose_collection(ns_terraform_old, tasks.terraform_old.ecr.ns, name='ecr')
+# compose_collection(ns_terraform_old, tasks.terraform_old.eip.ns, name='eip')
+# compose_collection(ns_terraform_old, tasks.terraform_old.instance.ns, name='instance')
+#
+# ns.add_collection(ns_terraform_old, 'terraform-old')
