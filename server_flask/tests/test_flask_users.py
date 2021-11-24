@@ -86,7 +86,6 @@ def test_flask_create_user_account(
     response = session.post(
         urljoin(flask_config.baseurl, "users/"),
         json={
-            "secret_key": flask_config.secret_key,
             "user_name": sample_account.user,
             "user_password": sample_account.password,
         },
