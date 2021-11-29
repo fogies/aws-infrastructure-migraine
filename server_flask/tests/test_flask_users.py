@@ -115,8 +115,7 @@ def test_flask_create_user_account_bad_key_failure(
     Test creation of a user account with bad key. Should return 403.
     """
 
-    session = requests.session()
-    response = session.post(
+    response = flask_session_unauthenticated.post(
         urljoin(flask_config.baseurl, "users/"),
         json={
             "user_name": sample_account.user,
@@ -124,7 +123,7 @@ def test_flask_create_user_account_bad_key_failure(
         },
         headers={"Authorization": "Bearer badkey"},
     )
-    assert response.status_code == 403
+    assert response.status_code == 403  # Forbidden
 
 
 def test_flask_create_duplicate_user_account_failure(
@@ -138,8 +137,7 @@ def test_flask_create_duplicate_user_account_failure(
 
     assert sample_account_create is None
 
-    session = requests.session()
-    response = session.post(
+    response = flask_session_unauthenticated.post(
         urljoin(flask_config.baseurl, "users/"),
         json={
             "user_name": sample_account.user,
