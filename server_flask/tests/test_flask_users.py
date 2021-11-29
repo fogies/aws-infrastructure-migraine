@@ -105,6 +105,49 @@ def test_flask_create_user_account(
     }
 
 
+def test_flask_create_user_account_bad_key_failure(
+    flask_config: migraine_shared.config.FlaskConfig,
+    sample_account: AccountTuple,
+):
+    """
+    Test creation of a user account with bad key. Should return 403.
+    """
+
+    session = requests.session()
+    response = session.post(
+        urljoin(flask_config.baseurl, "users/"),
+        json={
+            "user_name": sample_account.user,
+            "user_password": sample_account.password,
+        },
+        headers={"Authorization": "Bearer badkey"},
+    )
+    assert response.status_code == 403
+
+
+def test_flask_create_duplicate_user_account_failure(
+    flask_config: migraine_shared.config.FlaskConfig,
+    sample_account: AccountTuple,
+    sample_account_create,
+):
+    """
+    Test creation of a user account when the user already exists. Should return 409.
+    """
+
+    assert sample_account_create is None
+
+    session = requests.session()
+    response = session.post(
+        urljoin(flask_config.baseurl, "users/"),
+        json={
+            "user_name": sample_account.user,
+            "user_password": sample_account.password,
+        },
+        headers={"Authorization": "Bearer " + flask_config.secret_key},
+    )
+    assert response.status_code == 409
+
+
 def test_flask_get_all_users(
     flask_config: migraine_shared.config.FlaskConfig,
     sample_account: AccountTuple,
