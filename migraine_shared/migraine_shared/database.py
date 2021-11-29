@@ -47,7 +47,7 @@ def create_account(
         # Get succeeded, so the user already exists.
 
         response = requests.Response()
-        response.reason = {"message": "User already exists"}
+        response.reason = {"message": "User already exists."}
         response.status_code = 409
         return response
 
@@ -58,7 +58,7 @@ def create_account(
         response = requests.Response()
         # Something is off we reach here, database shouldn't exist if the user doesn't exist.
         response.reason = {
-            "message": "Database for user already exists. Get in touch with an administrator. "
+            "message": "User database already exists."
         }
         response.status_code = 409
         return response
