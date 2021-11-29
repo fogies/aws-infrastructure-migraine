@@ -2,12 +2,12 @@ from config.base import Config
 import migraine_shared.config
 
 # Path is relative to server_flask
-FLASK_CONFIG_PATH = "../secrets/configuration/dev_flask.yaml"
+DEV_FLASK_CONFIG_PATH = "../secrets/configuration/dev_flask.yaml"
 
 
 class DevelopmentConfig(Config):
     def __init__(self):
-        flask_config = migraine_shared.config.FlaskConfig.load(FLASK_CONFIG_PATH)
+        flask_config = migraine_shared.config.FlaskConfig.load(DEV_FLASK_CONFIG_PATH)
 
         Config.__init__(
             self=self,

@@ -1,7 +1,7 @@
 apiVersion: v2
 type: application
 
-name: migraine-flask
+name: migraine
 description: Infrastructure for migraine app deployment
 
 # Chart version, expected to follow Semantic Versioning <https://semver.org/>

@@ -21,5 +21,10 @@ module "hosted_zone" {
       name = "migraineapp.org",
       ip = var.eip_public_ip,
     },
+    /* Development Domain */
+    {
+      name = "dev.migraineapp.org",
+      ip = var.eip_public_ip,
+    },
   ]
 }

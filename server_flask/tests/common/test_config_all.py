@@ -2,43 +2,19 @@
 Configuration for testing against both development and production.
 """
 
-from pathlib import Path
-import pytest
-import requests
-
-import migraine_shared.config
+import migraine_shared.testing
 import tests.common.test_config
 
-
-@pytest.fixture(
-    params=[
-        tests.common.test_config.DEV_COUCHDB_CONFIG_PATH,
-        tests.common.test_config.PROD_COUCHDB_CONFIG_PATH,
-    ]
+test_config = migraine_shared.testing.create_test_config(
+    configs=tests.common.test_config.ALL_CONFIG
 )
-def couchdb_config(request) -> migraine_shared.config.CouchDBConfig:
-    """
-    Fixture providing CouchDB configuration.
-    """
-    return tests.common.test_config.couchdb_config(Path(request.param))
 
+couchdb_config = migraine_shared.testing.create_couchdb_config(test_config=test_config)
+couchdb_session_admin = migraine_shared.testing.create_couchdb_session_admin(couchdb_config=couchdb_config)
+# Tested in test_config_dev and test_config_prod
+# test_couchdb_session_admin = migraine_shared.testing.create_test_couchdb_session_admin(couchdb_config=couchdb_config)
 
-@pytest.fixture
-def couchdb_session_admin(couchdb_config: migraine_shared.config.CouchDBConfig) -> requests.Session:
-    """
-    Fixture providing session authenticated as administrator.
-    """
-    return tests.common.test_config.couchdb_session_admin(couchdb_config=couchdb_config)
-
-
-@pytest.fixture(
-    params=[
-        tests.common.test_config.DEV_FLASK_CONFIG_PATH,
-        tests.common.test_config.PROD_FLASK_CONFIG_PATH,
-    ]
-)
-def flask_config(request) -> migraine_shared.config.FlaskConfig:
-    """
-    Fixture providing Flask configuration.
-    """
-    return tests.common.test_config.flask_config(Path(request.param))
+flask_config = migraine_shared.testing.create_flask_config(test_config=test_config)
+flask_session_unauthenticated = migraine_shared.testing.create_flask_session_unauthenticated(flask_config=flask_config)
+# Tested in test_config_dev and test_config_prod
+# test_flask_session_unauthenticated = migraine_shared.testing.create_test_flask_session_unauthenticated(flask_config=flask_config)
