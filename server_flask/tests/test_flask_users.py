@@ -21,12 +21,12 @@ assert flask_config
 assert flask_session_unauthenticated
 
 
-AccountTuple = collections.namedtuple('AccountTuple', ['user', 'password'])
+AccountTuple = collections.namedtuple("AccountTuple", ["user", "password"])
 
 
 @pytest.fixture
 def sample_account() -> AccountTuple:
-    return AccountTuple('test_flask_user', secrets.token_urlsafe())
+    return AccountTuple("test_flask_user", secrets.token_urlsafe())
 
 
 @pytest.fixture()
@@ -56,7 +56,7 @@ def sample_account_create(
     couchdb_config: migraine_shared.config.CouchDBConfig,
     couchdb_session_admin: requests.Session,
     sample_account: AccountTuple,
-    sample_account_delete
+    sample_account_delete,
 ):
     """
     Fixture to create sample_account.  Uses sample_account_delete to also delete sample_account.
@@ -73,25 +73,25 @@ def sample_account_create(
     yield
 
 
-def test_flask_create_account(
+def test_flask_create_user_account(
     flask_config: migraine_shared.config.FlaskConfig,
     flask_session_unauthenticated: requests.Session,
     sample_account: AccountTuple,
     sample_account_delete,  # None, included for fixture functionality
 ):
     """
-    Test creation of an account.
+    Test creation of a user account.
     """
 
     assert sample_account_delete is None
 
     response = flask_session_unauthenticated.post(
-        urljoin(flask_config.baseurl, 'users/create_account'),
+        urljoin(flask_config.baseurl, "users/"),
         json={
-            'secret_key': flask_config.secret_key,
-            'user_name': sample_account.user,
-            'user_password': sample_account.password,
-        }
+            "user_name": sample_account.user,
+            "user_password": sample_account.password,
+        },
+        headers={"Authorization": "Bearer " + flask_config.secret_key},
     )
     assert response.ok
 
@@ -101,8 +101,51 @@ def test_flask_create_account(
     assert response.json() == {
         "status": 200,
         "user_name": sample_account.user,
-        "database": migraine_shared.database.database_for_user(user=sample_account.user),
+        "database": migraine_shared.database.database_for_user(
+            user=sample_account.user
+        ),
     }
+
+
+def test_flask_create_user_account_bad_key_failure(
+    flask_config: migraine_shared.config.FlaskConfig,
+    sample_account: AccountTuple,
+):
+    """
+    Test creation of a user account with bad key. Should return 403.
+    """
+
+    response = flask_session_unauthenticated.post(
+        urljoin(flask_config.baseurl, "users/"),
+        json={
+            "user_name": sample_account.user,
+            "user_password": sample_account.password,
+        },
+        headers={"Authorization": "Bearer badkey"},
+    )
+    assert response.status_code == 403  # Forbidden
+
+
+def test_flask_create_duplicate_user_account_failure(
+    flask_config: migraine_shared.config.FlaskConfig,
+    sample_account: AccountTuple,
+    sample_account_create,
+):
+    """
+    Test creation of a user account when the user already exists. Should return 409.
+    """
+
+    assert sample_account_create is None
+
+    response = flask_session_unauthenticated.post(
+        urljoin(flask_config.baseurl, "users/"),
+        json={
+            "user_name": sample_account.user,
+            "user_password": sample_account.password,
+        },
+        headers={"Authorization": "Bearer " + flask_config.secret_key},
+    )
+    assert response.status_code == 409
 
 
 def test_flask_get_all_users(
@@ -117,11 +160,9 @@ def test_flask_get_all_users(
 
     assert sample_account_create is None
 
-    response = flask_session_unauthenticated.post(
-        urljoin(flask_config.baseurl, 'users/get_all_users'),
-        json={
-            'secret_key': flask_config.secret_key,
-        }
+    response = flask_session_unauthenticated.get(
+        urljoin(flask_config.baseurl, "users/"),
+        headers={"Authorization": "Bearer " + flask_config.secret_key},
     )
     assert response.ok
 
@@ -129,10 +170,11 @@ def test_flask_get_all_users(
     # Ensure our sample is in that list.
     # TODO: Response format across the endpoints is inconsistent.
     #       Up to Yasaman/Anant whether to address in this deployment
-    assert sample_account.user in response.json()
+    # NOTE: @James - response format is consistent with other responses.
+    assert sample_account.user in response.json()["users"]
 
 
-def test_flask_get_user_profile(
+def test_flask_get_user(
     flask_config: migraine_shared.config.FlaskConfig,
     flask_session_unauthenticated: requests.Session,
     sample_account: AccountTuple,
@@ -144,12 +186,9 @@ def test_flask_get_user_profile(
 
     assert sample_account_create is None
 
-    response = flask_session_unauthenticated.post(
-        urljoin(flask_config.baseurl, 'users/get_profile'),
-        json={
-            'secret_key': flask_config.secret_key,
-            'user_name': sample_account.user,
-        }
+    response = flask_session_unauthenticated.get(
+        urljoin(flask_config.baseurl, "users/" + sample_account.user),
+        headers={"Authorization": "Bearer " + flask_config.secret_key},
     )
     assert response.ok
 
@@ -159,11 +198,13 @@ def test_flask_get_user_profile(
     assert response.json() == {
         "status": 200,
         "user_name": sample_account.user,
-        "database": migraine_shared.database.database_for_user(user=sample_account.user),
+        "database": migraine_shared.database.database_for_user(
+            user=sample_account.user
+        ),
     }
 
 
-def test_flask_get_user_profile_failure(
+def test_flask_get_user_failure(
     flask_config: migraine_shared.config.FlaskConfig,
     flask_session_unauthenticated: requests.Session,
     sample_account: AccountTuple,
@@ -174,11 +215,8 @@ def test_flask_get_user_profile_failure(
     Sample account was not created, this profile retrieval should fail.
     """
 
-    response = flask_session_unauthenticated.post(
-        urljoin(flask_config.baseurl, 'users/get_profile'),
-        json={
-            'secret_key': flask_config.secret_key,
-            'user_name': sample_account.user,
-        }
+    response = flask_session_unauthenticated.get(
+        urljoin(flask_config.baseurl, "users/" + sample_account.user),
+        headers={"Authorization": "Bearer " + flask_config.secret_key},
     )
     assert response.status_code == 404  # Not Found

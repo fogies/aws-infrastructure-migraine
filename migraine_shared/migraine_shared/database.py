@@ -3,6 +3,7 @@ import re
 import requests
 from urllib.parse import urljoin
 
+
 def create_account(
     couchdb_session_admin: requests.Session,
     couchdb_baseurl: str,
@@ -40,19 +41,24 @@ def create_account(
     response = couchdb_session_admin.get(
         urljoin(couchdb_baseurl, "_users/{}".format(user_doc_id)),
     )
+
     if response.ok:
         # Get succeeded, so the user already exists.
+
         response = requests.Response()
+        response.reason = {"message": "User already exists."}
         response.status_code = 409
         return response
 
     # Ensure the database does not already exist.
-    response = couchdb_session_admin.head(
-        urljoin(couchdb_baseurl, user_database)
-    )
+    response = couchdb_session_admin.head(urljoin(couchdb_baseurl, user_database))
     if response.ok:
         # Get succeeded, so the database already exists.
         response = requests.Response()
+        # Something is off we reach here, database shouldn't exist if the user doesn't exist.
+        response.reason = {
+            "message": "User database already exists."
+        }
         response.status_code = 409
         return response
 
@@ -148,9 +154,7 @@ def delete_account(
         account_existed = True
 
         # The database exists, issue a delete.
-        response = couchdb_session_admin.delete(
-            urljoin(couchdb_baseurl, user_database)
-        )
+        response = couchdb_session_admin.delete(urljoin(couchdb_baseurl, user_database))
         if not response.ok:
             # Deletion failed, return the underlying failure
             return response
@@ -177,7 +181,7 @@ def database_for_user(*, user: str):
     Database names will therefore be 'user_' followed by hex encoding of an MD5 hash of the user name.
     """
 
-    return 'user_{}'.format(hashlib.md5(user.encode('utf-8')).digest().hex())
+    return "user_{}".format(hashlib.md5(user.encode("utf-8")).digest().hex())
 
 
 def validate_user(*, user: str) -> bool:
@@ -189,11 +193,11 @@ def validate_user(*, user: str) -> bool:
     """
 
     # Forbid user that start with 'user_', as that conflicts with our database encoding
-    if user.startswith('user_'):
+    if user.startswith("user_"):
         return False
 
     # Limit to 32 characters, just to avoid any issues
     if len(user) > 32:
         return False
 
-    return re.match(pattern='^[a-zA-Z0-9_.]+$', string=user) is not None
+    return re.match(pattern="^[a-zA-Z0-9_.]+$", string=user) is not None
