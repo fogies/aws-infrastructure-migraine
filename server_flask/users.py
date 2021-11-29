@@ -1,4 +1,4 @@
-from flask import abort, Blueprint, current_app
+from flask import abort, Blueprint, current_app, Response
 from flask import jsonify, request
 from flask_json import as_json
 import jsonschema
@@ -9,6 +9,7 @@ from typing import Dict
 from urllib.parse import urljoin
 from functools import wraps
 import re
+import json
 
 import migraine_shared.database
 
@@ -202,7 +203,6 @@ def create_user():
     }
 
     """
-
     #
     # Validate the contents of the request
     #
@@ -242,8 +242,15 @@ def create_user():
         account=requested_user,
         password=requested_password,
     )
+
     if not response.ok:
-        return response
+        # Flask can return an object of type flask.wrappers.Response.
+        return Response(
+            response=json.dumps(response.reason),
+            status=response.status_code,
+            headers=dict(response.headers),
+            mimetype="application/json",
+        )
 
     return {
         "user_name": requested_user,
