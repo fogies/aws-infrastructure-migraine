@@ -2,7 +2,6 @@ import hashlib
 import re
 import requests
 from urllib.parse import urljoin
-from flask import current_app
 
 
 def create_account(
