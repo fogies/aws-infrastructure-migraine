@@ -35,7 +35,7 @@
         "aws-infrastructure": {
             "editable": true,
             "git": "https://github.com/fogies/aws-infrastructure.git",
-            "ref": "9c69bbdcd5fa45f04c6f20a363b706dcc3a2c4cb",
+            "ref": "9adca34892dfe1f4f030dfad29cd05799bdc1f44",
             "subdirectory": "aws_infrastructure"
         },
         "backports.entry-points-selectable": {
