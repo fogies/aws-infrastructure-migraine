@@ -1,0 +1,74 @@
+#
+# Proxy CouchDB to generate appropriate cookies.
+#
+# CouchDB does not know it is behind a reverse proxy providing SSL and the /db prefix.
+# It therefore does not mark its authentication cookie as secure nor with the /db prefix.
+# Doing this within Traefik would require a plugin.
+# Instead proxy access to CouchDB through a small nginx configuration.
+#
+
+---
+
+apiVersion: 'v1'
+kind: 'Service'
+metadata:
+  name: 'couchdb-proxy-cookie-prod'
+
+spec:
+  selector:
+    app: 'couchdb-proxy-cookie-prod'
+  ports:
+    - port: 80
+      protocol: 'TCP'
+
+---
+
+apiVersion: 'apps/v1'
+kind: 'Deployment'
+metadata:
+  name: 'deployment-couchdb-proxy-cookie-prod'
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: 'couchdb-proxy-cookie-prod'
+  template:
+    metadata:
+      labels:
+        app: 'couchdb-proxy-cookie-prod'
+    spec:
+      containers:
+        - name: 'nginx'
+          image: 'nginx:alpine'
+          imagePullPolicy: 'Always'
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: 'nginx-conf'
+              mountPath: '/etc/nginx/conf.d'
+      volumes:
+        - name: 'nginx-conf'
+          configMap:
+            name: 'configmap-couchdb-proxy-cookie-prod'
+
+---
+
+apiVersion: 'v1'
+kind: 'ConfigMap'
+metadata:
+  name: 'configmap-couchdb-proxy-cookie-prod'
+data:
+  nginx.conf: |
+    server {
+      listen      80;
+      server_name localhost;
+
+      proxy_cookie_path / "/db; HTTPOnly; Secure";
+
+      location / {
+        proxy_pass 'http://migraine-database-prod-svc-couchdb.migraine-database-prod:5984/';
+        proxy_redirect off;
+        proxy_buffering off;
+      }
+    }

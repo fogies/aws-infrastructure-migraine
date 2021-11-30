@@ -2,7 +2,7 @@ from config.base import Config
 import migraine_shared.config
 
 # Path is relative to server_flask
-DEV_FLASK_CONFIG_PATH = "../secrets/configuration/dev_flask.yaml"
+DEV_FLASK_CONFIG_PATH = "../secrets/configuration/dev_local_flask.yaml"
 
 
 class DevelopmentConfig(Config):

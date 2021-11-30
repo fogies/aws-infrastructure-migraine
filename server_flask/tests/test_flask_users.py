@@ -7,13 +7,12 @@ from urllib.parse import urljoin
 import migraine_shared.config
 import migraine_shared.database
 
-
-# Execute tests against only development.
-from tests.common.test_config_dev import test_config
-from tests.common.test_config_dev import couchdb_config
-from tests.common.test_config_dev import couchdb_session_admin
-from tests.common.test_config_dev import flask_config
-from tests.common.test_config_dev import flask_session_unauthenticated
+# Execute tests against both development and production.
+from tests.common.test_config_all import test_config
+from tests.common.test_config_all import couchdb_config
+from tests.common.test_config_all import couchdb_session_admin
+from tests.common.test_config_all import flask_config
+from tests.common.test_config_all import flask_session_unauthenticated
 assert test_config
 assert couchdb_config
 assert couchdb_session_admin
@@ -25,8 +24,10 @@ AccountTuple = collections.namedtuple("AccountTuple", ["user", "password"])
 
 
 @pytest.fixture
-def sample_account() -> AccountTuple:
-    return AccountTuple("test_flask_user", secrets.token_urlsafe())
+    couchdb_config: migraine_shared.config.CouchDBConfig,  # To force different random value per configuration
+) -> AccountTuple:
+    result = AccountTuple('test_flask_user_{}'.format(secrets.token_hex(nbytes=8)), secrets.token_urlsafe())
+    return result
 
 
 @pytest.fixture()
@@ -56,7 +57,7 @@ def sample_account_create(
     couchdb_config: migraine_shared.config.CouchDBConfig,
     couchdb_session_admin: requests.Session,
     sample_account: AccountTuple,
-    sample_account_delete,
+    sample_account_delete,  # None, included for fixture functionality
 ):
     """
     Fixture to create sample_account.  Uses sample_account_delete to also delete sample_account.
@@ -69,8 +70,6 @@ def sample_account_create(
         password=sample_account.password,
     )
     assert response.ok
-
-    yield
 
 
 def test_flask_create_user_account(

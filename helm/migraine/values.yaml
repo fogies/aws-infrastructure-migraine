@@ -18,5 +18,9 @@ tls:
 
 # Flask configuration
 flask:
-  imageName: 'aws_infrastructure_migraine/migraine_flask'
-  imageTag: 'latest'
+  dev:
+    imageName: 'aws_infrastructure_migraine/migraine_flask'
+    imageTag: 'latest'
+  prod:
+    imageName: 'aws_infrastructure_migraine/migraine_flask'
+    imageTag: 'latest'
