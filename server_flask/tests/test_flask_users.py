@@ -7,7 +7,6 @@ from urllib.parse import urljoin
 import migraine_shared.config
 import migraine_shared.database
 
-
 # Execute tests against both development and production.
 from tests.common.test_config_all import test_config
 from tests.common.test_config_all import couchdb_config
@@ -73,8 +72,6 @@ def sample_account_create(
         password=sample_account.password,
     )
     assert response.ok
-
-    yield
 
 
 def test_flask_create_account(
