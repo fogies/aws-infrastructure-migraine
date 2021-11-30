@@ -2,6 +2,7 @@ import aws_infrastructure.tasks.library.color
 from aws_infrastructure.tasks.collection import compose_collection
 from invoke import Collection
 
+import tasks.aws
 import tasks.celery
 import tasks.codebuild.migraine_flask
 import tasks.database
@@ -14,15 +15,20 @@ import tasks.terraform.dns
 import tasks.terraform.ecr
 import tasks.terraform.eip
 import tasks.terraform.instance
-import tasks.terraform_old.ecr
-import tasks.terraform_old.eip
-import tasks.terraform_old.instance
+# import tasks.terraform_old.ecr
+# import tasks.terraform_old.eip
+# import tasks.terraform_old.instance
 
-# Enable color in task output
+# Enable color
 aws_infrastructure.tasks.library.color.enable_color()
+# Apply the current AWS configuration
+aws_infrastructure.tasks.library.aws_configure.apply_aws_env(aws_env_path=tasks.aws.AWS_ENV_PATH)
 
 # Build primary task collection
 ns = Collection()
+
+# Compose from aws.py
+compose_collection(ns, tasks.aws.ns, name='aws')
 
 # Compose from codebuild
 ns_codebuild = Collection("codebuild")
