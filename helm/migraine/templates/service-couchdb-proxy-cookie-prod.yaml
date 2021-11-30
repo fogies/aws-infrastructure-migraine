@@ -64,7 +64,7 @@ data:
       listen      80;
       server_name localhost;
 
-      proxy_cookie_path / "/db; HTTPOnly; Secure";
+      proxy_cookie_path / "/db; SameSite=None; Secure";
 
       location / {
         proxy_pass 'http://migraine-database-prod-svc-couchdb.migraine-database-prod:5984/';

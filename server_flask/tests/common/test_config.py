@@ -11,10 +11,6 @@ DEV_CONFIG = [
         couchdb_config_path=Path("../secrets/configuration/dev_couchdb.yaml"),
         flask_config_path=Path("../secrets/configuration/dev_server_flask.yaml"),
     ),
-    migraine_shared.testing.TestingConfig(
-        couchdb_config_path=Path("../secrets/configuration/dev_couchdb.yaml"),
-        flask_config_path=Path("../secrets/configuration/dev_server_insecure_flask.yaml"),
-    ),
 ]
 
 PROD_CONFIG = [

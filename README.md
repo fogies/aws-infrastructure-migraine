@@ -221,6 +221,5 @@ Secrets needed for infrastructure configuration are in `secrets/configuration`.
 - `secrets/configuration/dev_couchdb.yaml`
 - `secrets/configuration/dev_local_flask.yaml`
 - `secrets/configuration/dev_server_flask.yaml`
-- `secrets/configuration/dev_server_insecure_flask.yaml`
 - `secrets/configuration/prod_couchdb.yaml`
 - `secrets/configuration/prod_flask.yaml`
