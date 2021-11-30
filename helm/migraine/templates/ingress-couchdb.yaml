@@ -23,37 +23,6 @@ spec:
 ---
 
 #
-# Development route.
-#
-
-apiVersion: 'traefik.containo.us/v1alpha1'
-kind: 'IngressRoute'
-
-metadata:
-  name: '{{ .Release.Name }}-ingress-couchdb-dev'
-
-spec:
-  entryPoints:
-    - 'websecure'
-  routes:
-    - kind: 'Rule'
-      match: 'HostRegexp(`dev.migraineapp.org`) && PathPrefix(`/db/`)'
-      priority: 10000
-      middlewares:
-        - name: 'enable-cors'
-          namespace: 'ingress'
-        - name: '{{ .Release.Name }}-ingress-couchdb-stripprefix-db'
-      services:
-        - kind: 'Service'
-          name: 'migraine-database-dev-svc-couchdb'
-          namespace: 'migraine-database-dev'
-          port: 5984
-  tls:
-    secretName: {{ .Values.tls.tlsSecret | squote }}
-
----
-
-#
 # Production route.
 #
 
@@ -71,8 +40,7 @@ spec:
       match: 'HostRegexp(`migraineapp.org`) && PathPrefix(`/db/`)'
       priority: 10000
       middlewares:
-        - name: 'enable-cors'
-          namespace: 'ingress'
+        - name: 'migraine-cors'
         - name: '{{ .Release.Name }}-ingress-couchdb-stripprefix-db'
       services:
         - kind: 'Service'
@@ -81,3 +49,61 @@ spec:
           port: 5984
   tls:
     secretName: {{ .Values.tls.tlsSecret | squote }}
+
+---
+
+#
+# Development route.
+#
+
+apiVersion: 'traefik.containo.us/v1alpha1'
+kind: 'IngressRoute'
+
+metadata:
+  name: '{{ .Release.Name }}-ingress-couchdb-dev'
+
+spec:
+  entryPoints:
+    - 'websecure'
+  routes:
+    - kind: 'Rule'
+      match: 'HostRegexp(`dev.migraineapp.org`) && PathPrefix(`/db/`)'
+      priority: 10000
+      middlewares:
+        - name: 'migraine-cors'
+        - name: '{{ .Release.Name }}-ingress-couchdb-stripprefix-db'
+      services:
+        - kind: 'Service'
+          name: 'migraine-database-dev-svc-couchdb'
+          namespace: 'migraine-database-dev'
+          port: 5984
+  tls:
+    secretName: {{ .Values.tls.tlsSecret | squote }}
+
+---
+
+#
+# Development route without SSL.
+#
+
+apiVersion: 'traefik.containo.us/v1alpha1'
+kind: 'IngressRoute'
+
+metadata:
+  name: '{{ .Release.Name }}-ingress-couchdb-dev-insecure'
+
+spec:
+  entryPoints:
+    - 'web'
+  routes:
+    - kind: 'Rule'
+      match: 'HostRegexp(`dev.migraineapp.org`) && PathPrefix(`/db/`)'
+      priority: 10000
+      middlewares:
+        - name: 'migraine-cors'
+        - name: '{{ .Release.Name }}-ingress-couchdb-stripprefix-db'
+      services:
+        - kind: 'Service'
+          name: 'migraine-database-dev-svc-couchdb'
+          namespace: 'migraine-database-dev'
+          port: 5984

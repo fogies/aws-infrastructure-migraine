@@ -40,8 +40,7 @@ spec:
       match: 'HostRegexp(`migraineapp.org`) && PathPrefix(`/api/`)'
       priority: 10000
       middlewares:
-        - name: 'enable-cors'
-          namespace: 'ingress'
+        - name: 'migraine-cors'
         - name: '{{ .Release.Name }}-ingress-flask-stripprefix-api'
       services:
         - kind: 'Service'
@@ -70,8 +69,7 @@ spec:
       match: 'HostRegexp(`dev.migraineapp.org`) && PathPrefix(`/api/`)'
       priority: 10000
       middlewares:
-        - name: 'enable-cors'
-          namespace: 'ingress'
+        - name: 'migraine-cors'
         - name: '{{ .Release.Name }}-ingress-flask-stripprefix-api'
       services:
         - kind: 'Service'
@@ -100,8 +98,7 @@ spec:
       match: 'HostRegexp(`dev.migraineapp.org`) && PathPrefix(`/api/`)'
       priority: 10000
       middlewares:
-        - name: 'enable-cors'
-          namespace: 'ingress'
+        - name: 'migraine-cors'
         - name: '{{ .Release.Name }}-ingress-flask-stripprefix-api'
       services:
         - kind: 'Service'

@@ -1,0 +1,24 @@
+#
+# Middleware for CORS.
+#
+
+apiVersion: 'traefik.containo.us/v1alpha1'
+kind: 'Middleware'
+metadata:
+  name: 'migraine-cors'
+spec:
+  headers:
+    accessControlAllowOriginListRegex:
+      - '.+'
+    accessControlAllowCredentials: true
+    accessControlAllowHeaders:
+      # Wildcard is not allowed with credentials
+      - 'content-type'
+    accessControlAllowMethods:
+      # Wildcard is not allowed with credentials
+      - 'GET'
+      - 'OPTIONS'
+      - 'POST'
+      - 'PUT'
+    accessControlMaxAge: 600
+    addVaryHeader: true
