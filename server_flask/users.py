@@ -63,11 +63,10 @@ def _validate_request_json_schema(*, instance: Dict, schema: Dict):
 
 
 def secure(f):
-    """Decorator function to validate the Bearer token in authorization header
+    """
+    Decorator function to validate the Bearer token in authorization header.
 
     Raise 403 on secret key mismatch or if secret key is missing in authorization header.
-
-    NOTE: @James - is there a need to further breakdown failure codes? 400 if Bearer token is missing etc.?
     """
 
     @wraps(f)
@@ -90,7 +89,8 @@ def secure(f):
 @as_json
 @secure
 def get_users():
-    """GET all users
+    """
+    GET all users
 
     Returns:
         {"users": [list of users]}
@@ -113,21 +113,14 @@ def get_users():
     )
     response.raise_for_status()
 
-    # For each element in the list of _user documents, check if 'id' starts with 'org.couchdb.user:""
-    #
-    # This would be easier to read with a small regex match test, but this is fine for now.
+    # For each element in the list of _user documents, check if 'id' starts with 'org.couchdb.user:'
+    regex_match_string = "org.couchdb.user:(.*)"
     return {
-        "users": list(
-            map(
-                lambda u: u["id"].split("org.couchdb.user:")[1],
-                list(
-                    filter(
-                        lambda user: re.search("org.couchdb.user:*", user["id"]),
-                        response.json()["rows"],
-                    )
-                ),
-            )
-        )
+        "users": [
+            re.match(regex_match_string, user["id"]).group(1)
+            for user in response.json()["rows"]
+            if re.match(regex_match_string, user["id"])
+        ]
     }
 
 
@@ -135,7 +128,8 @@ def get_users():
 @as_json
 @secure
 def get_user(user_name):
-    """GET user_name from couchdb
+    """
+    GET user_name from couchdb
 
     Args:
         user_name ([string]): [User name]

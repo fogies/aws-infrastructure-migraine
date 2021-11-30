@@ -1,11 +1,12 @@
 import collections
 import pytest
-import requests.auth
+import requests
 import secrets
 from urllib.parse import urljoin
 
 import migraine_shared.config
 import migraine_shared.database
+
 
 # Execute tests against both development and production.
 from tests.common.test_config_all import test_config
@@ -13,6 +14,7 @@ from tests.common.test_config_all import couchdb_config
 from tests.common.test_config_all import couchdb_session_admin
 from tests.common.test_config_all import flask_config
 from tests.common.test_config_all import flask_session_unauthenticated
+
 assert test_config
 assert couchdb_config
 assert couchdb_session_admin
@@ -23,7 +25,8 @@ assert flask_session_unauthenticated
 AccountTuple = collections.namedtuple("AccountTuple", ["user", "password"])
 
 
-@pytest.fixture
+@pytest.fixture()
+def sample_account(
     couchdb_config: migraine_shared.config.CouchDBConfig,  # To force different random value per configuration
 ) -> AccountTuple:
     result = AccountTuple('test_flask_user_{}'.format(secrets.token_hex(nbytes=8)), secrets.token_urlsafe())
@@ -95,8 +98,7 @@ def test_flask_create_user_account(
     assert response.ok
 
     # Response json is a dictionary containing status, user_name, and database.
-    # TODO: Response format across the endpoints is inconsistent.
-    #       Up to Yasaman/Anant whether to address in this deployment
+
     assert response.json() == {
         "status": 200,
         "user_name": sample_account.user,
@@ -108,6 +110,7 @@ def test_flask_create_user_account(
 
 def test_flask_create_user_account_bad_key_failure(
     flask_config: migraine_shared.config.FlaskConfig,
+    flask_session_unauthenticated: requests.Session,
     sample_account: AccountTuple,
 ):
     """
@@ -127,6 +130,7 @@ def test_flask_create_user_account_bad_key_failure(
 
 def test_flask_create_duplicate_user_account_failure(
     flask_config: migraine_shared.config.FlaskConfig,
+    flask_session_unauthenticated: requests.Session,
     sample_account: AccountTuple,
     sample_account_create,
 ):
@@ -167,9 +171,7 @@ def test_flask_get_all_users(
 
     # Response json is a list of users, with no surrounding dictionary.
     # Ensure our sample is in that list.
-    # TODO: Response format across the endpoints is inconsistent.
-    #       Up to Yasaman/Anant whether to address in this deployment
-    # NOTE: @James - response format is consistent with other responses.
+
     assert sample_account.user in response.json()["users"]
 
 
@@ -192,8 +194,7 @@ def test_flask_get_user(
     assert response.ok
 
     # Response json is a dictionary containing status, user_name, and database.
-    # TODO: Response format across the endpoints is inconsistent.
-    #       Up to Yasaman/Anant whether to address in this deployment
+
     assert response.json() == {
         "status": 200,
         "user_name": sample_account.user,
