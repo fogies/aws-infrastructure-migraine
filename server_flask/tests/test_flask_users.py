@@ -24,7 +24,8 @@ assert flask_session_unauthenticated
 AccountTuple = collections.namedtuple("AccountTuple", ["user", "password"])
 
 
-@pytest.fixture
+@pytest.fixture()
+def sample_account(
     couchdb_config: migraine_shared.config.CouchDBConfig,  # To force different random value per configuration
 ) -> AccountTuple:
     result = AccountTuple('test_flask_user_{}'.format(secrets.token_hex(nbytes=8)), secrets.token_urlsafe())
