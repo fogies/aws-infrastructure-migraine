@@ -1,5 +1,6 @@
 import collections
 import pytest
+import requests
 import secrets
 from urllib.parse import urljoin
 
