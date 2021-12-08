@@ -13,7 +13,13 @@ spec:
     accessControlAllowCredentials: true
     accessControlAllowHeaders:
       # Wildcard is not allowed with credentials
+      - 'authorization'
       - 'content-type'
+      - 'referer'
+      - 'sec-ch-ua'
+      - 'sec-ch-ua-mobile'
+      - 'sec-ch-ua-platform'
+      - 'user-agent'
     accessControlAllowMethods:
       # Wildcard is not allowed with credentials
       - 'GET'
