@@ -45,8 +45,6 @@ ns_minikube = aws_infrastructure.tasks.library.minikube.create_tasks(
     terraform_variables_path=TERRAFORM_VARIABLES_PATH,
 )
 
-print(ns_minikube)
-
 compose_collection(
     ns,
     ns_minikube,
