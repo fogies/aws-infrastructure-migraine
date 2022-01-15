@@ -14,7 +14,9 @@ import tasks.tests
 import tasks.terraform.dns
 import tasks.terraform.ecr
 import tasks.terraform.eip
+import tasks.terraform.eip_worker
 import tasks.terraform.instance
+import tasks.terraform.instance_worker
 # import tasks.terraform_old.ecr
 # import tasks.terraform_old.eip
 # import tasks.terraform_old.instance
@@ -68,16 +70,16 @@ compose_collection(
     name="database",
 )
 
-# # Compose from celery.py
-# compose_collection(
-#     ns_dev,
-#     tasks.celery.ns.collections['dev'],
-#     name='flask',
-# )
+# Compose from celery.py
+compose_collection(
+    ns_dev,
+    tasks.celery.ns.collections['dev'],
+    name='celery',
+)
 # compose_collection(
 #     ns_prod,
 #     tasks.celery.ns.collections['prod'],
-#     name='flask',
+#     name='celery',
 # )
 
 # Compose from flask.py
@@ -105,7 +107,9 @@ ns_terraform = Collection("terraform")
 compose_collection(ns_terraform, tasks.terraform.dns.ns, name="dns")
 compose_collection(ns_terraform, tasks.terraform.ecr.ns, name="ecr")
 compose_collection(ns_terraform, tasks.terraform.eip.ns, name="eip")
+compose_collection(ns_terraform, tasks.terraform.eip_worker.ns, name="eip_worker")
 compose_collection(ns_terraform, tasks.terraform.instance.ns, name="instance")
+compose_collection(ns_terraform, tasks.terraform.instance_worker.ns, name="instance_worker")
 
 ns.add_collection(ns_terraform, "terraform")
 
