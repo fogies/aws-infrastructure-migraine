@@ -12,6 +12,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+black = "*"
 pipenv = "*"
 pytest = "*"
 requests = "*"

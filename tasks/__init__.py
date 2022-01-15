@@ -68,16 +68,16 @@ compose_collection(
     name="database",
 )
 
-# # Compose from celery.py
-# compose_collection(
-#     ns_dev,
-#     tasks.celery.ns.collections['dev'],
-#     name='flask',
-# )
+# Compose from celery.py
+compose_collection(
+    ns_dev,
+    tasks.celery.ns.collections['dev'],
+    name='celery',
+)
 # compose_collection(
 #     ns_prod,
 #     tasks.celery.ns.collections['prod'],
-#     name='flask',
+#     name='celery',
 # )
 
 # Compose from flask.py
