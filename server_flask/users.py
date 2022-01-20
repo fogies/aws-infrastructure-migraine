@@ -13,32 +13,47 @@ import json
 
 import migraine_shared.database
 
+from timeit import default_timer as timer
+
+
 users_blueprint = Blueprint("users_blueprint", __name__)
 
 
-def _create_session(*, baseurl: str, user: str, password: str) -> requests.Session:
+ADMIN_SESSION = None
+ADMIN_SESSION_CREATED_TIME = -10000
+
+
+def _admin_session() -> requests.Session:
     """
     Obtain a session authenticated by the provided config.
     """
 
-    # Authentication object for our request
-    auth = requests.auth.HTTPBasicAuth(
-        username=user,
-        password=password,
-    )
+    global ADMIN_SESSION
+    global ADMIN_SESSION_CREATED_TIME
 
-    # Open a session
-    session = requests.Session()
-    response = session.post(
-        urljoin(baseurl, "_session"),
-        json={
-            "name": auth.username,
-            "password": auth.password,
-        },
-    )
-    response.raise_for_status()
+    time_current = timer()
+    if (time_current - ADMIN_SESSION_CREATED_TIME) > 120:  # 120 seconds
+        # Authentication object for our request
+        auth = requests.auth.HTTPBasicAuth(
+            username=current_app.config["DATABASE_ADMIN_USER"],
+            password=current_app.config["DATABASE_ADMIN_PASSWORD"],
+        )
 
-    return session
+        # Open a session
+        session = requests.Session()
+        response = session.post(
+            urljoin(current_app.config["DATABASE_BASEURL"], "_session"),
+            json={
+                "name": auth.username,
+                "password": auth.password,
+            },
+        )
+        response.raise_for_status()
+
+        ADMIN_SESSION = session
+        ADMIN_SESSION_CREATED_TIME = time_current
+
+    return ADMIN_SESSION
 
 
 def _validate_request_json_schema(*, instance: Dict, schema: Dict):
@@ -100,11 +115,7 @@ def get_users():
     #
 
     baseurl = current_app.config["DATABASE_BASEURL"]
-    admin_session = _create_session(
-        baseurl=baseurl,
-        user=current_app.config["DATABASE_ADMIN_USER"],
-        password=current_app.config["DATABASE_ADMIN_PASSWORD"],
-    )
+    admin_session = _admin_session()
 
     # Get all users.
     # https://docs.couchdb.org/en/stable/intro/security.html#authentication-database
@@ -143,12 +154,8 @@ def get_user(user_name):
     #
     # Connect to the database
     #
-    couchdb_baseurl = current_app.config["DATABASE_BASEURL"]
-    couchdb_session_admin = _create_session(
-        baseurl=couchdb_baseurl,
-        user=current_app.config["DATABASE_ADMIN_USER"],
-        password=current_app.config["DATABASE_ADMIN_PASSWORD"],
-    )
+    baseurl = current_app.config["DATABASE_BASEURL"]
+    admin_session = _admin_session()
 
     #
     # Validate the state of the database
@@ -159,15 +166,15 @@ def get_user(user_name):
     user_database = migraine_shared.database.database_for_user(user=user_name)
 
     # Confirm the user exists
-    response = couchdb_session_admin.get(
-        urljoin(couchdb_baseurl, "_users/{}".format(user_doc_id)),
+    response = admin_session.get(
+        urljoin(baseurl, "_users/{}".format(user_doc_id)),
     )
     if not response.ok:
         abort(404, jsonify(message="User not found."))  # 404 Not Found
 
     # User exists, confirm database exists
-    response = couchdb_session_admin.head(
-        urljoin(couchdb_baseurl, user_database),
+    response = admin_session.head(
+        urljoin(baseurl, user_database),
     )
     if not response.ok:
         abort(404, jsonify(message="Database not found."))  # 404 Not Found
@@ -219,20 +226,16 @@ def create_user():
     # Connect to the database
     #
 
-    couchdb_baseurl = current_app.config["DATABASE_BASEURL"]
-    couchdb_session_admin = _create_session(
-        baseurl=couchdb_baseurl,
-        user=current_app.config["DATABASE_ADMIN_USER"],
-        password=current_app.config["DATABASE_ADMIN_PASSWORD"],
-    )
+    baseurl = current_app.config["DATABASE_BASEURL"]
+    admin_session = _admin_session()
 
     #
     # Create the user and their database
     #
 
     response = migraine_shared.database.create_account(
-        couchdb_session_admin=couchdb_session_admin,
-        couchdb_baseurl=couchdb_baseurl,
+        couchdb_session_admin=admin_session,
+        couchdb_baseurl=baseurl,
         account=requested_user,
         password=requested_password,
     )
