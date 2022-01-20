@@ -51,17 +51,17 @@ releases:
         # couchdbConfig:
         #   couchdb:
         #     uuid: 'XXXXXXXXXX'
-      - clusterSize: 3
+      - clusterSize: 2
         image:
           repository: 'couchdb'
           tag: '3.2.0'
           pullPolicy: 'Always'
         resources:
           requests:
-            cpu: 50m
+            cpu: 100m
             memory: 128Mi
           limits:
-            cpu: 250m
+            cpu: 500m
             memory: 256Mi
 
   # CouchDB instance for production
@@ -77,7 +77,7 @@ releases:
         # couchdbConfig:
         #   couchdb:
         #     uuid: 'XXXXXXXXXX'
-      - clusterSize: 3
+      - clusterSize: 2
         image:
           repository: 'couchdb'
           tag: '3.2.0'
@@ -87,7 +87,7 @@ releases:
             cpu: 100m
             memory: 128Mi
           limits:
-            cpu: 250m
+            cpu: 500m
             memory: 256Mi
 
   # migraine

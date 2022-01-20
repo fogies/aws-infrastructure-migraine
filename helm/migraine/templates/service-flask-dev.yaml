@@ -25,7 +25,7 @@ metadata:
   name: '{{ .Release.Name }}-deployment-flask-dev'
 
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: '{{ .Release.Name }}-flask-dev'
@@ -44,9 +44,12 @@ spec:
             - name: '{{ .Release.Name }}-flask-dev-config-instance'
               mountPath: '/cloned_repository/server_flask/instance/'
           resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
             limits:
-              # TODO
-              cpu: '50m'
+              cpu: 250m
+              memory: 256Mi
       volumes:
         - name: '{{ .Release.Name }}-flask-dev-config-instance'
           configMap:
