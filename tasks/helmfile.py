@@ -1,6 +1,5 @@
 import aws_infrastructure.tasks.library.instance_helmfile
 from invoke import Collection
-import ruamel.yaml
 from pathlib import Path
 
 import migraine_shared.config
@@ -21,6 +20,7 @@ DEV_COUCHDB_CONFIG_PATH = "./secrets/configuration/dev_couchdb.yaml"
 DEV_FLASK_CONFIG_PATH = "./secrets/configuration/dev_server_flask.yaml"
 PROD_COUCHDB_CONFIG_PATH = "./secrets/configuration/prod_couchdb.yaml"
 PROD_FLASK_CONFIG_PATH = "./secrets/configuration/prod_flask.yaml"
+
 
 # Helmfile deployment requires information on CouchDB development configuration
 def couchdb_dev_helmfile_values_factory(*, context):
